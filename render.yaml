@@ -1,0 +1,11 @@
+services:
+  - type: web
+    name: foodics-org-domain
+    runtime: python
+    buildCommand: pip install -r requirements.txt
+    startCommand: python run.py
+    envVars:
+      - key: PORT
+        value: 10000
+      - key: ENV
+        value: production
