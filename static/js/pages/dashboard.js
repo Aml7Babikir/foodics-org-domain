@@ -6,7 +6,8 @@ registerPage('dashboard', async (container) => {
     const brands = tree.brands || [];
     const locs = tree.locations || [];
     const les = tree.legal_entities || [];
-    const countries = tree.countries || [];
+    const countriesRaw = tree.countries || [];
+    const countries = countriesRaw.filter((c, i, arr) => arr.findIndex(x => x.iso_code === c.iso_code) === i);
     const lgs = tree.location_groups || [];
     const bus = tree.business_units || [];
 
