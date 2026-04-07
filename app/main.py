@@ -13,10 +13,29 @@ Base.metadata.create_all(bind=engine)
 from sqlalchemy import inspect as sa_inspect, text
 with engine.connect() as conn:
     inspector = sa_inspect(engine)
+
     le_cols = [c["name"] for c in inspector.get_columns("legal_entities")]
     if "email" not in le_cols:
         conn.execute(text("ALTER TABLE legal_entities ADD COLUMN email VARCHAR(255)"))
         conn.commit()
+
+    grp_cols = [c["name"] for c in inspector.get_columns("groups")]
+    for col, ctype in [("tax_number", "VARCHAR(100)"), ("address", "TEXT"), ("owner_names", "TEXT")]:
+        if col not in grp_cols:
+            conn.execute(text(f"ALTER TABLE groups ADD COLUMN {col} {ctype}"))
+    conn.commit()
+
+    loc_cols = [c["name"] for c in inspector.get_columns("locations")]
+    loc_migrations = [
+        ("reference", "VARCHAR(100)"), ("phone", "VARCHAR(50)"), ("street_number", "VARCHAR(100)"),
+        ("opening_from", "VARCHAR(10)"), ("opening_to", "VARCHAR(10)"), ("inventory_eod_time", "VARCHAR(10)"),
+        ("receives_online_orders", "BOOLEAN DEFAULT 0"), ("accepts_reservations", "BOOLEAN DEFAULT 0"),
+        ("reservation_duration", "INTEGER"), ("reservation_times", "TEXT"),
+    ]
+    for col, ctype in loc_migrations:
+        if col not in loc_cols:
+            conn.execute(text(f"ALTER TABLE locations ADD COLUMN {col} {ctype}"))
+    conn.commit()
 
 app = FastAPI(
     title="Foodics Organisation Domain API",
