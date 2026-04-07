@@ -45,97 +45,6 @@ registerPage('hierarchy', async (container) => {
             </div>
         </div>
 
-        ${groups.filter(g => !g.is_default).length > 0 ? `
-        <div class="hier-section">
-            <h3 class="hier-section-title">Groups</h3>
-            <div class="hier-groups">
-                ${groups.filter(g => !g.is_default).map(g => `
-                    <div class="hier-group-pill"><span class="hier-dot" style="background:#0EA5E9;"></span>${g.name}</div>
-                `).join('')}
-            </div>
-        </div>` : ''}
-
-        <!-- Brand × Country Matrix -->
-        <div class="hier-section">
-            <h3 class="hier-section-title">Brands & Markets</h3>
-            <p class="hier-section-desc">How your brands map to the countries you operate in</p>
-            <div class="brand-matrix">
-                ${brands.map(b => {
-                    const bCountries = brandCountries[b.id] || [];
-                    const bLocs = brandLocations[b.id] || [];
-                    return `
-                        <div class="brand-matrix-row">
-                            <div class="brand-matrix-row-head">
-                                <div class="brand-matrix-brand-icon">B</div>
-                                <span>${b.name}</span>
-                            </div>
-                        </div>
-                        ${bCountries.length > 0 ? `
-                        <div class="brand-matrix-detail">
-                            ${bCountries.map(c => {
-                                const cLEIds = new Set(les.filter(le => le.country_id === c.id).map(le => le.id));
-                                const cLocs = bLocs.filter(l => cLEIds.has(l.legal_entity_id));
-                                const cLGIds = new Set(cLocs.map(l => l.location_group_id).filter(Boolean));
-                                const cLGs = lgs.filter(lg => cLGIds.has(lg.id));
-                                if (cLocs.length === 0 && cLGs.length === 0) return '';
-                                return `
-                                <div class="brand-matrix-country-section">
-                                    <div class="brand-matrix-country-header">
-                                        <span class="hier-dot" style="background:#10B981;"></span>
-                                        <span>${c.name}</span>
-                                        <span class="brand-matrix-iso">${c.iso_code}</span>
-                                        <span class="hier-sub-count">${cLocs.length} location${cLocs.length !== 1 ? 's' : ''}</span>
-                                    </div>
-                                    <div class="brand-matrix-country-body">
-                                        ${cLGs.length > 0 ? `
-                                        <div class="brand-matrix-detail-group">
-                                            <div class="brand-matrix-detail-label">Location Groups</div>
-                                            <div class="brand-matrix-detail-items">
-                                                ${cLGs.map(lg => {
-                                                    const lgLocs = cLocs.filter(l => l.location_group_id === lg.id);
-                                                    return `<div class="brand-matrix-detail-item">
-                                                        <span class="hier-dot" style="background:#EF4444;"></span>
-                                                        <span>${lg.name}</span>
-                                                        <span class="hier-sub-count">${lgLocs.length} location${lgLocs.length !== 1 ? 's' : ''}</span>
-                                                    </div>`;
-                                                }).join('')}
-                                            </div>
-                                        </div>` : ''}
-                                        <div class="brand-matrix-detail-group">
-                                            <div class="brand-matrix-detail-label">Locations (${cLocs.length})</div>
-                                            <div class="brand-matrix-detail-items">
-                                                ${cLGs.map(lg => {
-                                                    const lgLocs = cLocs.filter(l => l.location_group_id === lg.id);
-                                                    if (lgLocs.length === 0) return '';
-                                                    return `<div class="brand-matrix-loc-group">
-                                                        <div class="brand-matrix-loc-group-label">${lg.name}</div>
-                                                        ${lgLocs.map(l => `<div class="brand-matrix-detail-item">
-                                                            <span class="hier-dot" style="background:#06B6D4;"></span>
-                                                            <span>${l.name}</span>
-                                                        </div>`).join('')}
-                                                    </div>`;
-                                                }).join('')}
-                                                ${(() => {
-                                                    const ungrouped = cLocs.filter(l => !l.location_group_id);
-                                                    if (ungrouped.length === 0) return '';
-                                                    return `<div class="brand-matrix-loc-group">
-                                                        ${ungrouped.map(l => `<div class="brand-matrix-detail-item">
-                                                            <span class="hier-dot" style="background:#06B6D4;"></span>
-                                                            <span>${l.name}</span>
-                                                        </div>`).join('')}
-                                                    </div>`;
-                                                })()}
-                                            </div>
-                                        </div>
-                                    </div>
-                                </div>`;
-                            }).join('')}
-                        </div>` : ''}
-                    `;
-                }).join('')}
-            </div>
-        </div>
-
         <!-- Groups Hierarchy -->
         ${groups.filter(g => !g.is_default).length > 0 ? `
         <div class="hier-section">
@@ -334,6 +243,87 @@ registerPage('hierarchy', async (container) => {
                                 </div>
                             </div>
                         </div>
+                    `;
+                }).join('')}
+            </div>
+        </div>
+
+        <!-- Brand × Country Matrix -->
+        <div class="hier-section">
+            <h3 class="hier-section-title">Brands & Markets</h3>
+            <p class="hier-section-desc">How your brands map to the countries you operate in</p>
+            <div class="brand-matrix">
+                ${brands.map(b => {
+                    const bCountries = brandCountries[b.id] || [];
+                    const bLocs = brandLocations[b.id] || [];
+                    return `
+                        <div class="brand-matrix-row">
+                            <div class="brand-matrix-row-head">
+                                <div class="brand-matrix-brand-icon">B</div>
+                                <span>${b.name}</span>
+                            </div>
+                        </div>
+                        ${bCountries.length > 0 ? `
+                        <div class="brand-matrix-detail">
+                            ${bCountries.map(c => {
+                                const cLEIds = new Set(les.filter(le => le.country_id === c.id).map(le => le.id));
+                                const cLocs = bLocs.filter(l => cLEIds.has(l.legal_entity_id));
+                                const cLGIds = new Set(cLocs.map(l => l.location_group_id).filter(Boolean));
+                                const cLGs = lgs.filter(lg => cLGIds.has(lg.id));
+                                if (cLocs.length === 0 && cLGs.length === 0) return '';
+                                return `
+                                <div class="brand-matrix-country-section">
+                                    <div class="brand-matrix-country-header">
+                                        <span class="hier-dot" style="background:#10B981;"></span>
+                                        <span>${c.name}</span>
+                                        <span class="brand-matrix-iso">${c.iso_code}</span>
+                                        <span class="hier-sub-count">${cLocs.length} location${cLocs.length !== 1 ? 's' : ''}</span>
+                                    </div>
+                                    <div class="brand-matrix-country-body">
+                                        ${cLGs.length > 0 ? `
+                                        <div class="brand-matrix-detail-group">
+                                            <div class="brand-matrix-detail-label">Location Groups</div>
+                                            <div class="brand-matrix-detail-items">
+                                                ${cLGs.map(lg => {
+                                                    const lgLocs = cLocs.filter(l => l.location_group_id === lg.id);
+                                                    return `<div class="brand-matrix-detail-item">
+                                                        <span class="hier-dot" style="background:#EF4444;"></span>
+                                                        <span>${lg.name}</span>
+                                                        <span class="hier-sub-count">${lgLocs.length} location${lgLocs.length !== 1 ? 's' : ''}</span>
+                                                    </div>`;
+                                                }).join('')}
+                                            </div>
+                                        </div>` : ''}
+                                        <div class="brand-matrix-detail-group">
+                                            <div class="brand-matrix-detail-label">Locations (${cLocs.length})</div>
+                                            <div class="brand-matrix-detail-items">
+                                                ${cLGs.map(lg => {
+                                                    const lgLocs = cLocs.filter(l => l.location_group_id === lg.id);
+                                                    if (lgLocs.length === 0) return '';
+                                                    return `<div class="brand-matrix-loc-group">
+                                                        <div class="brand-matrix-loc-group-label">${lg.name}</div>
+                                                        ${lgLocs.map(l => `<div class="brand-matrix-detail-item">
+                                                            <span class="hier-dot" style="background:#06B6D4;"></span>
+                                                            <span>${l.name}</span>
+                                                        </div>`).join('')}
+                                                    </div>`;
+                                                }).join('')}
+                                                ${(() => {
+                                                    const ungrouped = cLocs.filter(l => !l.location_group_id);
+                                                    if (ungrouped.length === 0) return '';
+                                                    return `<div class="brand-matrix-loc-group">
+                                                        ${ungrouped.map(l => `<div class="brand-matrix-detail-item">
+                                                            <span class="hier-dot" style="background:#06B6D4;"></span>
+                                                            <span>${l.name}</span>
+                                                        </div>`).join('')}
+                                                    </div>`;
+                                                })()}
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>`;
+                            }).join('')}
+                        </div>` : ''}
                     `;
                 }).join('')}
             </div>
