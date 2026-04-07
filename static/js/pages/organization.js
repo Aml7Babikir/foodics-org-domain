@@ -79,11 +79,18 @@ registerPage('organization', async (container) => {
                         <table class="data-table">
                             <thead><tr><th>Name</th><th>ISO Code</th><th>Currency</th></tr></thead>
                             <tbody>
-                                ${countries.map(c => `<tr>
-                                    <td><strong>${c.name}</strong></td>
-                                    <td>${c.iso_code || '--'}</td>
-                                    <td>${c.currency_code || '--'}</td>
-                                </tr>`).join('')}
+                                ${(() => {
+                                    const seen = new Set();
+                                    return countries.filter(c => {
+                                        if (seen.has(c.iso_code)) return false;
+                                        seen.add(c.iso_code);
+                                        return true;
+                                    }).map(c => `<tr>
+                                        <td><strong>${c.name}</strong></td>
+                                        <td>${c.iso_code || '--'}</td>
+                                        <td>${c.currency_code || '--'}</td>
+                                    </tr>`).join('');
+                                })()}
                             </tbody>
                         </table>
                         `}
