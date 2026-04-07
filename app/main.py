@@ -9,6 +9,15 @@ from app.api.routes import hierarchy, config, users, delegation, templates
 # Create all tables
 Base.metadata.create_all(bind=engine)
 
+# Lightweight migrations for new columns on existing tables
+from sqlalchemy import inspect as sa_inspect, text
+with engine.connect() as conn:
+    inspector = sa_inspect(engine)
+    le_cols = [c["name"] for c in inspector.get_columns("legal_entities")]
+    if "email" not in le_cols:
+        conn.execute(text("ALTER TABLE legal_entities ADD COLUMN email VARCHAR(255)"))
+        conn.commit()
+
 app = FastAPI(
     title="Foodics Organisation Domain API",
     description="Unified Merchant Hierarchy, Configuration Inheritance, Scoped Roles & Permissions, and Franchise Delegation",

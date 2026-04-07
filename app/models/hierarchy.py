@@ -126,6 +126,9 @@ class LegalEntity(BaseModel):
     tax_mode = Column(String(20), default="inclusive")  # inclusive, exclusive
     zatca_enabled = Column(Boolean, default=False)
 
+    # Contact
+    email = Column(String(255), nullable=True)
+
     # Franchise ownership: who owns/operates this legal entity
     owner_name = Column(String(255), nullable=True)  # e.g. "Al-Nakheel F&B LLC" (the franchisee)
     is_franchise = Column(Boolean, default=False)  # True if operated by a franchisee

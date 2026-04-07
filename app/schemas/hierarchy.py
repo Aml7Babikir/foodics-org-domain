@@ -117,6 +117,7 @@ class LegalEntityCreate(BaseModel):
     registered_address: Optional[str] = None
     tax_mode: str = "inclusive"
     zatca_enabled: bool = False
+    email: Optional[str] = None
     owner_name: Optional[str] = None
     is_franchise: bool = False
 
@@ -145,6 +146,7 @@ class LegalEntityUpdate(BaseModel):
     registered_address: Optional[str] = None
     tax_mode: Optional[str] = None
     zatca_enabled: Optional[bool] = None
+    email: Optional[str] = None
     owner_name: Optional[str] = None
     is_franchise: Optional[bool] = None
 
@@ -167,6 +169,7 @@ class LegalEntityOut(BaseModel):
     currency_code: str
     tax_mode: str
     zatca_enabled: bool
+    email: Optional[str]
     owner_name: Optional[str]
     is_franchise: bool
     status: str

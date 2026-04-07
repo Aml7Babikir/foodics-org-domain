@@ -38,10 +38,11 @@ async function renderLEList(container, orgId) {
                     <thead>
                         <tr>
                             <th>Name</th>
-                            <th>Currency</th>
-                            <th>Tax Mode</th>
-                            <th>Franchise</th>
+                            <th>Owner</th>
+                            <th>Email</th>
                             <th>VAT Number</th>
+                            <th>CR</th>
+                            <th>Franchise</th>
                             <th>Status</th>
                             <th>Actions</th>
                         </tr>
@@ -52,10 +53,11 @@ async function renderLEList(container, orgId) {
                             return `
                             <tr>
                                 <td><strong>${le.name}</strong></td>
-                                <td><span class="badge badge-blue">${le.currency_code || '--'}</span></td>
-                                <td>${le.tax_mode || '--'}</td>
-                                <td>${le.is_franchise ? '<span class="badge badge-amber">Yes</span>' : '<span class="badge badge-gray">No</span>'}</td>
+                                <td>${le.owner_name || '<span class="text-muted">--</span>'}</td>
+                                <td>${le.email || '<span class="text-muted">--</span>'}</td>
                                 <td class="font-mono text-sm">${le.vat_registration_number || '--'}</td>
+                                <td class="font-mono text-sm">${le.commercial_registration || '--'}</td>
+                                <td>${le.is_franchise ? '<span class="badge badge-amber">Yes</span>' : '<span class="badge badge-gray">No</span>'}</td>
                                 <td><span class="badge ${statusClass}">${le.status || 'active'}</span></td>
                                 <td>
                                     <button class="btn btn-sm btn-outline" onclick="navigate('legal-entities', {leId: '${le.id}'})">View</button>
@@ -114,22 +116,32 @@ async function renderLEList(container, orgId) {
                         </select>
                     </div>
                 </div>
-                <div class="form-group">
-                    <label class="form-label">VAT Registration Number</label>
-                    <input class="form-input" id="addLEVAT" placeholder="310200000000003">
+                <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;">
+                    <div class="form-group">
+                        <label class="form-label">Owner Name</label>
+                        <input class="form-input" id="addLEOwner" placeholder="e.g. Al-Nakheel Group">
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Email</label>
+                        <input class="form-input" id="addLEEmail" type="email" placeholder="legal@company.com">
+                    </div>
                 </div>
                 <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;">
                     <div class="form-group">
-                        <label class="form-label">Franchise?</label>
-                        <select class="form-select" id="addLEFranchise">
-                            <option value="false">No</option>
-                            <option value="true">Yes</option>
-                        </select>
+                        <label class="form-label">VAT Registration Number</label>
+                        <input class="form-input" id="addLEVAT" placeholder="310200000000003">
                     </div>
                     <div class="form-group">
-                        <label class="form-label">Owner Name (if franchise)</label>
-                        <input class="form-input" id="addLEOwner" placeholder="e.g. Al-Nakheel Group">
+                        <label class="form-label">Commercial Registration (CR)</label>
+                        <input class="form-input" id="addLECR" placeholder="e.g. 1010XXXXXX">
                     </div>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Franchise?</label>
+                    <select class="form-select" id="addLEFranchise">
+                        <option value="false">No</option>
+                        <option value="true">Yes</option>
+                    </select>
                 </div>
             </div>
             <div class="modal-footer">
@@ -156,6 +168,8 @@ async function renderLEList(container, orgId) {
             currency_code: document.getElementById('addLECurrency').value || 'SAR',
             tax_mode: document.getElementById('addLETaxMode').value,
             vat_registration_number: document.getElementById('addLEVAT').value || null,
+            commercial_registration: document.getElementById('addLECR').value || null,
+            email: document.getElementById('addLEEmail').value || null,
             is_franchise: document.getElementById('addLEFranchise').value === 'true',
             owner_name: document.getElementById('addLEOwner').value || null,
         };
@@ -213,12 +227,28 @@ async function renderLEDetail(container, leId) {
                     <div class="card-body">
                         <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:24px;">
                             <div class="form-group">
-                                <label class="form-label" style="color:#64748B;font-size:12px;text-transform:uppercase;letter-spacing:0.05em;">LE ID</label>
-                                <div class="font-mono text-sm">${le.id}</div>
+                                <label class="form-label" style="color:#64748B;font-size:12px;text-transform:uppercase;letter-spacing:0.05em;">Legal Name</label>
+                                <div>${le.name}</div>
+                            </div>
+                            <div class="form-group">
+                                <label class="form-label" style="color:#64748B;font-size:12px;text-transform:uppercase;letter-spacing:0.05em;">Owner Name</label>
+                                <div>${le.owner_name || '<span class="text-muted">N/A</span>'}</div>
+                            </div>
+                            <div class="form-group">
+                                <label class="form-label" style="color:#64748B;font-size:12px;text-transform:uppercase;letter-spacing:0.05em;">Email</label>
+                                <div>${le.email || '<span class="text-muted">Not set</span>'}</div>
+                            </div>
+                            <div class="form-group">
+                                <label class="form-label" style="color:#64748B;font-size:12px;text-transform:uppercase;letter-spacing:0.05em;">VAT Registration Number</label>
+                                <div class="font-mono">${le.vat_registration_number || '<span class="text-muted">Not set</span>'}</div>
                             </div>
                             <div class="form-group">
                                 <label class="form-label" style="color:#64748B;font-size:12px;text-transform:uppercase;letter-spacing:0.05em;">Country</label>
                                 <div>${le.country_name || le.country_id || '--'}</div>
+                            </div>
+                            <div class="form-group">
+                                <label class="form-label" style="color:#64748B;font-size:12px;text-transform:uppercase;letter-spacing:0.05em;">Commercial Registration</label>
+                                <div class="font-mono">${le.commercial_registration || '<span class="text-muted">Not set</span>'}</div>
                             </div>
                             <div class="form-group">
                                 <label class="form-label" style="color:#64748B;font-size:12px;text-transform:uppercase;letter-spacing:0.05em;">Currency</label>
@@ -227,14 +257,6 @@ async function renderLEDetail(container, leId) {
                             <div class="form-group">
                                 <label class="form-label" style="color:#64748B;font-size:12px;text-transform:uppercase;letter-spacing:0.05em;">Tax Mode</label>
                                 <div>${le.tax_mode || '--'}</div>
-                            </div>
-                            <div class="form-group">
-                                <label class="form-label" style="color:#64748B;font-size:12px;text-transform:uppercase;letter-spacing:0.05em;">VAT Registration Number</label>
-                                <div class="font-mono">${le.vat_registration_number || '<span class="text-muted">Not set</span>'}</div>
-                            </div>
-                            <div class="form-group">
-                                <label class="form-label" style="color:#64748B;font-size:12px;text-transform:uppercase;letter-spacing:0.05em;">Owner Name</label>
-                                <div>${le.owner_name || '<span class="text-muted">N/A</span>'}</div>
                             </div>
                             <div class="form-group">
                                 <label class="form-label" style="color:#64748B;font-size:12px;text-transform:uppercase;letter-spacing:0.05em;">Created</label>
@@ -325,16 +347,24 @@ async function renderLEDetail(container, leId) {
                     <div class="card-body">
                         <div style="display:grid;grid-template-columns:1fr 1fr;gap:24px;">
                             <div class="form-group">
-                                <label class="form-label">Name</label>
+                                <label class="form-label">Legal Name</label>
                                 <input class="form-input" id="leEditName" value="${le.name || ''}">
                             </div>
                             <div class="form-group">
-                                <label class="form-label">Status</label>
-                                <select class="form-select" id="leEditStatus">
-                                    <option value="active" ${le.status === 'active' ? 'selected' : ''}>Active</option>
-                                    <option value="suspended" ${le.status === 'suspended' ? 'selected' : ''}>Suspended</option>
-                                    <option value="inactive" ${le.status === 'inactive' ? 'selected' : ''}>Inactive</option>
-                                </select>
+                                <label class="form-label">Owner Name</label>
+                                <input class="form-input" id="leEditOwner" value="${le.owner_name || ''}" placeholder="e.g. Al-Nakheel Group">
+                            </div>
+                            <div class="form-group">
+                                <label class="form-label">Email</label>
+                                <input class="form-input" id="leEditEmail" type="email" value="${le.email || ''}" placeholder="legal@company.com">
+                            </div>
+                            <div class="form-group">
+                                <label class="form-label">VAT Registration Number</label>
+                                <input class="form-input" id="leEditVAT" value="${le.vat_registration_number || ''}">
+                            </div>
+                            <div class="form-group">
+                                <label class="form-label">Commercial Registration (CR)</label>
+                                <input class="form-input" id="leEditCR" value="${le.commercial_registration || ''}" placeholder="e.g. 1010XXXXXX">
                             </div>
                             <div class="form-group">
                                 <label class="form-label">Currency Code</label>
@@ -348,10 +378,6 @@ async function renderLEDetail(container, leId) {
                                 </select>
                             </div>
                             <div class="form-group">
-                                <label class="form-label">VAT Registration Number</label>
-                                <input class="form-input" id="leEditVAT" value="${le.vat_registration_number || ''}">
-                            </div>
-                            <div class="form-group">
                                 <label class="form-label">Franchise?</label>
                                 <select class="form-select" id="leEditFranchise">
                                     <option value="false" ${!le.is_franchise ? 'selected' : ''}>No</option>
@@ -359,8 +385,12 @@ async function renderLEDetail(container, leId) {
                                 </select>
                             </div>
                             <div class="form-group">
-                                <label class="form-label">Owner Name</label>
-                                <input class="form-input" id="leEditOwner" value="${le.owner_name || ''}" placeholder="e.g. Al-Nakheel Group">
+                                <label class="form-label">Status</label>
+                                <select class="form-select" id="leEditStatus">
+                                    <option value="active" ${le.status === 'active' ? 'selected' : ''}>Active</option>
+                                    <option value="suspended" ${le.status === 'suspended' ? 'selected' : ''}>Suspended</option>
+                                    <option value="inactive" ${le.status === 'inactive' ? 'selected' : ''}>Inactive</option>
+                                </select>
                             </div>
                         </div>
                     </div>
@@ -375,12 +405,14 @@ async function renderLEDetail(container, leId) {
     window._leSaveEdit = async () => {
         const data = {
             name: document.getElementById('leEditName').value,
-            status: document.getElementById('leEditStatus').value,
+            owner_name: document.getElementById('leEditOwner').value || null,
+            email: document.getElementById('leEditEmail').value || null,
+            vat_registration_number: document.getElementById('leEditVAT').value || null,
+            commercial_registration: document.getElementById('leEditCR').value || null,
             currency_code: document.getElementById('leEditCurrency').value || null,
             tax_mode: document.getElementById('leEditTaxMode').value,
-            vat_registration_number: document.getElementById('leEditVAT').value || null,
             is_franchise: document.getElementById('leEditFranchise').value === 'true',
-            owner_name: document.getElementById('leEditOwner').value || null,
+            status: document.getElementById('leEditStatus').value,
         };
         if (!data.name) { toast('Name is required', 'error'); return; }
         try {
