@@ -266,7 +266,8 @@ registerPage('hierarchy', async (container) => {
                         ${bCountries.length > 0 ? `
                         <div class="brand-matrix-detail">
                             ${bCountries.map(c => {
-                                const cLEIds = new Set(les.filter(le => le.country_id === c.id).map(le => le.id));
+                                const sameIsoCountryIds = new Set(countries.filter(cc => cc.iso_code === c.iso_code).map(cc => cc.id));
+                                const cLEIds = new Set(les.filter(le => sameIsoCountryIds.has(le.country_id)).map(le => le.id));
                                 const cLocs = bLocs.filter(l => cLEIds.has(l.legal_entity_id));
                                 const cLGIds = new Set(cLocs.map(l => l.location_group_id).filter(Boolean));
                                 const cLGs = lgs.filter(lg => cLGIds.has(lg.id));
