@@ -27,7 +27,8 @@ with engine.connect() as conn:
 
     loc_cols = [c["name"] for c in inspector.get_columns("locations")]
     loc_migrations = [
-        ("reference", "VARCHAR(100)"), ("phone", "VARCHAR(50)"), ("street_number", "VARCHAR(100)"),
+        ("reference", "VARCHAR(100)"), ("phone", "VARCHAR(50)"), ("country", "VARCHAR(100)"),
+        ("street_number", "VARCHAR(100)"),
         ("opening_from", "VARCHAR(10)"), ("opening_to", "VARCHAR(10)"), ("inventory_eod_time", "VARCHAR(10)"),
         ("receives_online_orders", "BOOLEAN DEFAULT 0"), ("accepts_reservations", "BOOLEAN DEFAULT 0"),
         ("reservation_duration", "INTEGER"), ("reservation_times", "TEXT"),
