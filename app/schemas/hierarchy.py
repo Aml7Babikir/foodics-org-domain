@@ -34,15 +34,24 @@ class OrganisationOut(BaseModel):
 class GroupCreate(BaseModel):
     name: str
     organisation_id: str
+    tax_number: Optional[str] = None
+    address: Optional[str] = None
+    owner_names: Optional[str] = None
 
 class GroupUpdate(BaseModel):
     name: Optional[str] = None
+    tax_number: Optional[str] = None
+    address: Optional[str] = None
+    owner_names: Optional[str] = None
 
 class GroupOut(BaseModel):
     id: str
     name: str
     organisation_id: str
     is_default: bool
+    tax_number: Optional[str]
+    address: Optional[str]
+    owner_names: Optional[str]
     status: str
     created_at: datetime
     class Config:
@@ -238,6 +247,17 @@ class LocationCreate(BaseModel):
     longitude: Optional[str] = None
     location_type: str = "physical"
     template_id: Optional[str] = None
+    reference: Optional[str] = None
+    phone: Optional[str] = None
+    country: Optional[str] = None
+    street_number: Optional[str] = None
+    opening_from: Optional[str] = None
+    opening_to: Optional[str] = None
+    inventory_eod_time: Optional[str] = None
+    receives_online_orders: bool = False
+    accepts_reservations: bool = False
+    reservation_duration: Optional[int] = None
+    reservation_times: Optional[str] = None
 
 class LocationUpdate(BaseModel):
     name: Optional[str] = None
@@ -248,6 +268,17 @@ class LocationUpdate(BaseModel):
     longitude: Optional[str] = None
     location_type: Optional[str] = None
     is_active: Optional[bool] = None
+    reference: Optional[str] = None
+    phone: Optional[str] = None
+    country: Optional[str] = None
+    street_number: Optional[str] = None
+    opening_from: Optional[str] = None
+    opening_to: Optional[str] = None
+    inventory_eod_time: Optional[str] = None
+    receives_online_orders: Optional[bool] = None
+    accepts_reservations: Optional[bool] = None
+    reservation_duration: Optional[int] = None
+    reservation_times: Optional[str] = None
 
 class LocationOut(BaseModel):
     id: str
@@ -257,6 +288,17 @@ class LocationOut(BaseModel):
     location_group_id: Optional[str]
     address: Optional[str]
     city: Optional[str]
+    reference: Optional[str]
+    phone: Optional[str]
+    country: Optional[str]
+    street_number: Optional[str]
+    opening_from: Optional[str]
+    opening_to: Optional[str]
+    inventory_eod_time: Optional[str]
+    receives_online_orders: bool
+    accepts_reservations: bool
+    reservation_duration: Optional[int]
+    reservation_times: Optional[str]
     location_type: str
     is_active: bool
     status: str

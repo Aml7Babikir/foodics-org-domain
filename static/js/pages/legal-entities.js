@@ -75,6 +75,9 @@ async function renderLEList(container, orgId) {
         const tree = await loadTree();
         const countries = tree ? tree.countries : [];
         const brands = tree ? tree.brands : [];
+        const groups = tree ? tree.groups.filter(g => !g.is_default) : [];
+        const lgs = tree ? tree.location_groups : [];
+        const locs = tree ? tree.locations : [];
 
         openModal(`
             <div class="modal-header">
@@ -83,18 +86,56 @@ async function renderLEList(container, orgId) {
             </div>
             <div class="modal-body">
                 <div class="form-group">
-                    <label class="form-label">Name</label>
-                    <input class="form-input" id="addLEName" placeholder="Legal entity name">
-                </div>
-                <div class="form-group">
-                    <label class="form-label">Country</label>
+                    <label class="form-label">Country <span style="color:#EF4444;">*</span></label>
                     <select class="form-select" id="addLECountry">
                         <option value="">Select country...</option>
                         ${countries.map(c => `<option value="${c.id}">${c.name} (${c.iso_code})</option>`).join('')}
                     </select>
                 </div>
                 <div class="form-group">
-                    <label class="form-label">Brands (select one or more)</label>
+                    <label class="form-label">Legal Brand Name <span style="color:#EF4444;">*</span></label>
+                    <input class="form-input" id="addLEName" placeholder="Legal entity name">
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Legal Entity Owner Name</label>
+                    <input class="form-input" id="addLEOwner" placeholder="e.g. Al-Nakheel Group">
+                </div>
+                <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;">
+                    <div class="form-group">
+                        <label class="form-label">VAT Registration Number</label>
+                        <input class="form-input" id="addLEVAT" placeholder="310200000000003">
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Commercial Registration / CR</label>
+                        <input class="form-input" id="addLECR" placeholder="e.g. 1010XXXXXX">
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Location Group</label>
+                    <select class="form-select" id="addLELocationGroup">
+                        <option value="">None</option>
+                        ${lgs.map(lg => `<option value="${lg.id}">${lg.name}</option>`).join('')}
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Locations</label>
+                    <div id="addLELocationsContainer" style="max-height:150px;overflow-y:auto;border:1px solid #E2E8F0;border-radius:8px;padding:8px;">
+                        ${locs.length === 0 ? '<span class="text-muted">No locations available</span>' : locs.map(l => `
+                            <label style="display:flex;align-items:center;gap:8px;padding:4px 0;cursor:pointer;">
+                                <input type="checkbox" class="addLELocationCheck" value="${l.id}"> ${l.name}
+                            </label>
+                        `).join('')}
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Group</label>
+                    <select class="form-select" id="addLEGroup">
+                        <option value="">None</option>
+                        ${groups.map(g => `<option value="${g.id}">${g.name}</option>`).join('')}
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Brands <span style="color:#EF4444;">*</span> (select at least one)</label>
                     <div id="addLEBrandsContainer" style="max-height:150px;overflow-y:auto;border:1px solid #E2E8F0;border-radius:8px;padding:8px;">
                         ${brands.map(b => `
                             <label style="display:flex;align-items:center;gap:8px;padding:4px 0;cursor:pointer;">
@@ -103,45 +144,9 @@ async function renderLEList(container, orgId) {
                         `).join('')}
                     </div>
                 </div>
-                <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;">
-                    <div class="form-group">
-                        <label class="form-label">Currency Code</label>
-                        <input class="form-input" id="addLECurrency" placeholder="SAR" value="SAR">
-                    </div>
-                    <div class="form-group">
-                        <label class="form-label">Tax Mode</label>
-                        <select class="form-select" id="addLETaxMode">
-                            <option value="inclusive">Inclusive</option>
-                            <option value="exclusive">Exclusive</option>
-                        </select>
-                    </div>
-                </div>
-                <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;">
-                    <div class="form-group">
-                        <label class="form-label">Owner Name</label>
-                        <input class="form-input" id="addLEOwner" placeholder="e.g. Al-Nakheel Group">
-                    </div>
-                    <div class="form-group">
-                        <label class="form-label">Email</label>
-                        <input class="form-input" id="addLEEmail" type="email" placeholder="legal@company.com">
-                    </div>
-                </div>
-                <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;">
-                    <div class="form-group">
-                        <label class="form-label">VAT Registration Number</label>
-                        <input class="form-input" id="addLEVAT" placeholder="310200000000003">
-                    </div>
-                    <div class="form-group">
-                        <label class="form-label">Commercial Registration (CR)</label>
-                        <input class="form-input" id="addLECR" placeholder="e.g. 1010XXXXXX">
-                    </div>
-                </div>
                 <div class="form-group">
-                    <label class="form-label">Franchise?</label>
-                    <select class="form-select" id="addLEFranchise">
-                        <option value="false">No</option>
-                        <option value="true">Yes</option>
-                    </select>
+                    <label class="form-label">Business Units</label>
+                    <input class="form-input" id="addLEBusinessUnits" placeholder="e.g. Dine-in, Delivery">
                 </div>
             </div>
             <div class="modal-footer">
@@ -159,19 +164,25 @@ async function renderLEList(container, orgId) {
 
         const brandChecks = document.querySelectorAll('.addLEBrandCheck:checked');
         const brandIds = Array.from(brandChecks).map(cb => cb.value);
+        if (brandIds.length === 0) { toast('At least one brand is required', 'error'); return; }
+
+        const locationChecks = document.querySelectorAll('.addLELocationCheck:checked');
+        const locationIds = Array.from(locationChecks).map(cb => cb.value);
 
         const data = {
             name,
             organisation_id: orgId,
             country_id: countryId,
             brand_ids: brandIds,
-            currency_code: document.getElementById('addLECurrency').value || 'SAR',
-            tax_mode: document.getElementById('addLETaxMode').value,
+            currency_code: 'SAR',
+            tax_mode: 'inclusive',
             vat_registration_number: document.getElementById('addLEVAT').value || null,
             commercial_registration: document.getElementById('addLECR').value || null,
-            email: document.getElementById('addLEEmail').value || null,
-            is_franchise: document.getElementById('addLEFranchise').value === 'true',
             owner_name: document.getElementById('addLEOwner').value || null,
+            location_group_id: document.getElementById('addLELocationGroup').value || null,
+            location_ids: locationIds,
+            group_id: document.getElementById('addLEGroup').value || null,
+            business_units: document.getElementById('addLEBusinessUnits').value || null,
         };
 
         try {
@@ -187,12 +198,13 @@ async function renderLEList(container, orgId) {
 }
 
 async function renderLEDetail(container, leId) {
-    let le, brands, bus, lgs;
+    let le, brands, bus, lgs, locs;
     try {
         le = await api.getLE(leId);
         brands = await api.getLEBrands(leId);
         bus = await api.listBUs(leId);
         lgs = await api.listLGs(leId);
+        locs = await api.listLocations({ legal_entity_id: leId });
     } catch (e) {
         container.innerHTML = `<div class="empty-state"><h4>Error loading legal entity</h4><p>${e.message}</p></div>`;
         return;
@@ -322,6 +334,31 @@ async function renderLEDetail(container, leId) {
                                         <td><strong>${lg.name}</strong></td>
                                         <td class="font-mono text-sm text-muted">${truncId(lg.id)}</td>
                                         <td class="text-sm text-muted">${fmtDate(lg.created_at)}</td>
+                                    </tr>
+                                `).join('')}
+                            </tbody>
+                        </table>
+                        `}
+                    </div>
+                </div>
+
+                <!-- Locations -->
+                <div class="card mt-4">
+                    <div class="card-header">
+                        <h3>Locations (${locs.length})</h3>
+                    </div>
+                    <div class="card-body" style="padding:0;">
+                        ${locs.length === 0 ? '<div class="empty-state"><p>No locations.</p></div>' : `
+                        <table class="data-table">
+                            <thead><tr><th>Name</th><th>City</th><th>Type</th><th>Status</th><th>Actions</th></tr></thead>
+                            <tbody>
+                                ${locs.map(l => `
+                                    <tr>
+                                        <td><strong>${l.name}</strong></td>
+                                        <td>${l.city || '--'}</td>
+                                        <td>${l.location_type ? `<span class="badge badge-gray">${l.location_type}</span>` : '--'}</td>
+                                        <td><span class="badge badge-green">${l.status || 'active'}</span></td>
+                                        <td><button class="btn btn-sm btn-outline" onclick="navigate('locations', {locationId: '${l.id}'})">View</button></td>
                                     </tr>
                                 `).join('')}
                             </tbody>

@@ -29,6 +29,8 @@ function getPageTitle(page) {
         brands: 'Brands',
         'legal-entities': 'Legal Entities',
         locations: 'Locations',
+        'location-groups': 'Location Groups',
+        groups: 'Groups',
         users: 'Users',
         roles: 'Roles & Permissions',
     };

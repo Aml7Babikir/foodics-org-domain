@@ -67,6 +67,7 @@ const api = {
     updateBU:       (id, d)  => api.put(`/hierarchy/business-units/${id}`, d),
 
     listLGs:        (leId)   => api.get(`/hierarchy/legal-entities/${leId}/location-groups`),
+    getLG:          (id)     => api.get(`/hierarchy/location-groups/${id}`),
     createLG:       (data)   => api.post('/hierarchy/location-groups', data),
     updateLG:       (id, d)  => api.put(`/hierarchy/location-groups/${id}`, d),
 

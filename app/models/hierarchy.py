@@ -51,6 +51,9 @@ class Group(BaseModel):
     organisation_id = Column(String(36), ForeignKey("organisations.id"), nullable=False)
     is_default = Column(Boolean, default=False)
     status = Column(String(20), default="active")
+    tax_number = Column(String(100))
+    address = Column(Text)
+    owner_names = Column(Text)
 
     organisation = relationship("Organisation", back_populates="groups")
     brands = relationship("Brand", back_populates="group")
@@ -196,6 +199,17 @@ class Location(BaseModel):
 
     address = Column(Text)
     city = Column(String(100))
+    reference = Column(String(100))
+    phone = Column(String(50))
+    country = Column(String(100))
+    street_number = Column(String(100))
+    opening_from = Column(String(10))
+    opening_to = Column(String(10))
+    inventory_eod_time = Column(String(10))
+    receives_online_orders = Column(Boolean, default=False)
+    accepts_reservations = Column(Boolean, default=False)
+    reservation_duration = Column(Integer)
+    reservation_times = Column(Text)
     latitude = Column(String(20))
     longitude = Column(String(20))
     location_type = Column(String(30), default="physical")  # physical, ghost_kitchen, food_truck

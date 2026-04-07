@@ -60,59 +60,76 @@ registerPage('hierarchy', async (container) => {
             <h3 class="hier-section-title">Brands & Markets</h3>
             <p class="hier-section-desc">How your brands map to the countries you operate in</p>
             <div class="brand-matrix">
-                <div class="brand-matrix-header">
-                    <div class="brand-matrix-corner"></div>
-                    ${allCountryNames.map(cn => `<div class="brand-matrix-col-head">${cn}</div>`).join('')}
-                </div>
                 ${brands.map(b => {
                     const bCountries = brandCountries[b.id] || [];
-                    const bCountryNames = bCountries.map(c => c.name);
                     const bLocs = brandLocations[b.id] || [];
-                    const bLGs = brandLocationGroups[b.id] || [];
                     return `
                         <div class="brand-matrix-row">
                             <div class="brand-matrix-row-head">
                                 <div class="brand-matrix-brand-icon">B</div>
                                 <span>${b.name}</span>
                             </div>
-                            ${allCountryNames.map(cn => {
-                                const active = bCountryNames.includes(cn);
-                                const country = bCountries.find(c => c.name === cn);
-                                return `<div class="brand-matrix-cell ${active ? 'active' : ''}">
-                                    ${active ? `<div class="brand-matrix-dot"></div><span class="brand-matrix-iso">${country.iso_code}</span>` : ''}
+                        </div>
+                        ${bCountries.length > 0 ? `
+                        <div class="brand-matrix-detail">
+                            ${bCountries.map(c => {
+                                const cLEIds = new Set(les.filter(le => le.country_id === c.id).map(le => le.id));
+                                const cLocs = bLocs.filter(l => cLEIds.has(l.legal_entity_id));
+                                const cLGIds = new Set(cLocs.map(l => l.location_group_id).filter(Boolean));
+                                const cLGs = lgs.filter(lg => cLGIds.has(lg.id));
+                                if (cLocs.length === 0 && cLGs.length === 0) return '';
+                                return `
+                                <div class="brand-matrix-country-section">
+                                    <div class="brand-matrix-country-header">
+                                        <span class="hier-dot" style="background:#10B981;"></span>
+                                        <span>${c.name}</span>
+                                        <span class="brand-matrix-iso">${c.iso_code}</span>
+                                        <span class="hier-sub-count">${cLocs.length} location${cLocs.length !== 1 ? 's' : ''}</span>
+                                    </div>
+                                    <div class="brand-matrix-country-body">
+                                        ${cLGs.length > 0 ? `
+                                        <div class="brand-matrix-detail-group">
+                                            <div class="brand-matrix-detail-label">Location Groups</div>
+                                            <div class="brand-matrix-detail-items">
+                                                ${cLGs.map(lg => {
+                                                    const lgLocs = cLocs.filter(l => l.location_group_id === lg.id);
+                                                    return `<div class="brand-matrix-detail-item">
+                                                        <span class="hier-dot" style="background:#EF4444;"></span>
+                                                        <span>${lg.name}</span>
+                                                        <span class="hier-sub-count">${lgLocs.length} location${lgLocs.length !== 1 ? 's' : ''}</span>
+                                                    </div>`;
+                                                }).join('')}
+                                            </div>
+                                        </div>` : ''}
+                                        <div class="brand-matrix-detail-group">
+                                            <div class="brand-matrix-detail-label">Locations (${cLocs.length})</div>
+                                            <div class="brand-matrix-detail-items">
+                                                ${cLGs.map(lg => {
+                                                    const lgLocs = cLocs.filter(l => l.location_group_id === lg.id);
+                                                    if (lgLocs.length === 0) return '';
+                                                    return `<div class="brand-matrix-loc-group">
+                                                        <div class="brand-matrix-loc-group-label">${lg.name}</div>
+                                                        ${lgLocs.map(l => `<div class="brand-matrix-detail-item">
+                                                            <span class="hier-dot" style="background:#06B6D4;"></span>
+                                                            <span>${l.name}</span>
+                                                        </div>`).join('')}
+                                                    </div>`;
+                                                }).join('')}
+                                                ${(() => {
+                                                    const ungrouped = cLocs.filter(l => !l.location_group_id);
+                                                    if (ungrouped.length === 0) return '';
+                                                    return `<div class="brand-matrix-loc-group">
+                                                        ${ungrouped.map(l => `<div class="brand-matrix-detail-item">
+                                                            <span class="hier-dot" style="background:#06B6D4;"></span>
+                                                            <span>${l.name}</span>
+                                                        </div>`).join('')}
+                                                    </div>`;
+                                                })()}
+                                            </div>
+                                        </div>
+                                    </div>
                                 </div>`;
                             }).join('')}
-                        </div>
-                        ${(bLGs.length > 0 || bLocs.length > 0) ? `
-                        <div class="brand-matrix-detail">
-                            ${bLGs.length > 0 ? `
-                            <div class="brand-matrix-detail-group">
-                                <div class="brand-matrix-detail-label">Location Groups</div>
-                                <div class="brand-matrix-detail-items">
-                                    ${bLGs.map(lg => {
-                                        const lgLocs = bLocs.filter(l => l.location_group_id === lg.id);
-                                        return `<div class="brand-matrix-detail-item">
-                                            <span class="hier-dot" style="background:#EF4444;"></span>
-                                            <span>${lg.name}</span>
-                                            <span class="hier-sub-count">${lgLocs.length} location${lgLocs.length !== 1 ? 's' : ''}</span>
-                                        </div>`;
-                                    }).join('')}
-                                </div>
-                            </div>` : ''}
-                            <div class="brand-matrix-detail-group">
-                                <div class="brand-matrix-detail-label">Locations (${bLocs.length})</div>
-                                <div class="brand-matrix-detail-items">
-                                    ${bLocs.slice(0, 8).map(l => {
-                                        const lg = lgs.find(g => g.id === l.location_group_id);
-                                        return `<div class="brand-matrix-detail-item">
-                                            <span class="hier-dot" style="background:#06B6D4;"></span>
-                                            <span>${l.name}</span>
-                                            ${lg ? `<span class="brand-matrix-lg-tag">${lg.name}</span>` : ''}
-                                        </div>`;
-                                    }).join('')}
-                                    ${bLocs.length > 8 ? `<div class="brand-matrix-detail-more">+${bLocs.length - 8} more</div>` : ''}
-                                </div>
-                            </div>
                         </div>` : ''}
                     `;
                 }).join('')}

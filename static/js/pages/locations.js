@@ -161,42 +161,60 @@ async function renderLocationList(container) {
                 <button class="modal-close" onclick="closeModal()">&times;</button>
             </div>
             <div class="modal-body">
+                <div style="margin-top:16px;margin-bottom:8px;font-weight:600;font-size:14px;color:#1E293B;">Basic Info</div>
                 <div class="form-group">
-                    <label class="form-label">Name</label>
-                    <input class="form-input" id="addLocName" placeholder="Location name">
+                    <label class="form-label">Name *</label>
+                    <input class="form-input" id="addLocName" placeholder="e.g. Riyadh Park Branch">
                 </div>
                 <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;">
                     <div class="form-group">
-                        <label class="form-label">Brand (required)</label>
-                        <select class="form-select" id="addLocBrand">
-                            <option value="">Select brand...</option>
-                            ${brands.map(b => `<option value="${b.id}">${b.name}</option>`).join('')}
-                        </select>
-                    </div>
-                    <div class="form-group">
-                        <label class="form-label">Legal Entity (required)</label>
+                        <label class="form-label">Legal Entity *</label>
                         <select class="form-select" id="addLocLE">
                             <option value="">Select legal entity...</option>
                             ${legalEntities.map(le => `<option value="${le.id}">${le.name}</option>`).join('')}
                         </select>
                     </div>
+                    <div class="form-group">
+                        <label class="form-label">Brand *</label>
+                        <select class="form-select" id="addLocBrand">
+                            <option value="">Select brand...</option>
+                            ${brands.map(b => `<option value="${b.id}">${b.name}</option>`).join('')}
+                        </select>
+                    </div>
                 </div>
-                <div class="form-group">
-                    <label class="form-label">Location Group (optional)</label>
-                    <select class="form-select" id="addLocLG">
-                        <option value="">None</option>
-                        ${tree ? tree.location_groups.map(lg => `<option value="${lg.id}">${lg.name}</option>`).join('') : ''}
-                    </select>
+                <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;">
+                    <div class="form-group">
+                        <label class="form-label">Reference</label>
+                        <input class="form-input" id="addLocReference" placeholder="Unique branch reference/code">
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Phone</label>
+                        <input class="form-input" id="addLocPhone" placeholder="Contact number">
+                    </div>
                 </div>
-                <div class="form-group">
-                    <label class="form-label">Address</label>
-                    <input class="form-input" id="addLocAddress" placeholder="Street address">
+
+                <div style="margin-top:16px;margin-bottom:8px;font-weight:600;font-size:14px;color:#1E293B;">Address</div>
+                <div style="display:grid;grid-template-columns:2fr 1fr;gap:16px;">
+                    <div class="form-group">
+                        <label class="form-label">Address</label>
+                        <input class="form-input" id="addLocAddress" placeholder="Street address">
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Street Number</label>
+                        <input class="form-input" id="addLocStreetNumber" placeholder="">
+                    </div>
                 </div>
-                <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:16px;">
+                <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;">
                     <div class="form-group">
                         <label class="form-label">City</label>
                         <input class="form-input" id="addLocCity" placeholder="City">
                     </div>
+                    <div class="form-group">
+                        <label class="form-label">Country</label>
+                        <input class="form-input" id="addLocCountry" placeholder="Country">
+                    </div>
+                </div>
+                <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;">
                     <div class="form-group">
                         <label class="form-label">Latitude</label>
                         <input class="form-input" id="addLocLat" type="number" step="any" placeholder="24.7136">
@@ -206,17 +224,72 @@ async function renderLocationList(container) {
                         <input class="form-input" id="addLocLng" type="number" step="any" placeholder="46.6753">
                     </div>
                 </div>
-                <div class="form-group">
-                    <label class="form-label">Location Type</label>
-                    <select class="form-select" id="addLocType">
-                        <option value="">Not specified</option>
-                        <option value="dine_in">Dine In</option>
-                        <option value="takeaway">Takeaway</option>
-                        <option value="delivery">Delivery</option>
-                        <option value="drive_through">Drive Through</option>
-                        <option value="cloud_kitchen">Cloud Kitchen</option>
-                        <option value="kiosk">Kiosk</option>
-                    </select>
+
+                <div style="margin-top:16px;margin-bottom:8px;font-weight:600;font-size:14px;color:#1E293B;">Location Group & Type</div>
+                <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;">
+                    <div class="form-group">
+                        <label class="form-label">Location Group</label>
+                        <select class="form-select" id="addLocLG">
+                            <option value="">None</option>
+                            ${tree ? tree.location_groups.map(lg => `<option value="${lg.id}">${lg.name}</option>`).join('') : ''}
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Location Type</label>
+                        <select class="form-select" id="addLocType">
+                            <option value="">Not specified</option>
+                            <option value="dine_in">Dine In</option>
+                            <option value="takeaway">Takeaway</option>
+                            <option value="delivery">Delivery</option>
+                            <option value="drive_through">Drive Through</option>
+                            <option value="cloud_kitchen">Cloud Kitchen</option>
+                            <option value="kiosk">Kiosk</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div style="margin-top:16px;margin-bottom:8px;font-weight:600;font-size:14px;color:#1E293B;">Operating Hours</div>
+                <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:16px;">
+                    <div class="form-group">
+                        <label class="form-label">Opening From</label>
+                        <input class="form-input" id="addLocOpeningFrom" type="time">
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Opening To</label>
+                        <input class="form-input" id="addLocOpeningTo" type="time">
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Inventory End of Day Time</label>
+                        <input class="form-input" id="addLocInventoryEod" type="time">
+                    </div>
+                </div>
+
+                <div style="margin-top:16px;margin-bottom:8px;font-weight:600;font-size:14px;color:#1E293B;">Online & Reservations</div>
+                <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;">
+                    <div class="form-group">
+                        <label class="form-label">Receives Online Orders</label>
+                        <select class="form-select" id="addLocOnlineOrders">
+                            <option value="false">No</option>
+                            <option value="true">Yes</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Accepts Reservations</label>
+                        <select class="form-select" id="addLocReservations">
+                            <option value="false">No</option>
+                            <option value="true">Yes</option>
+                        </select>
+                    </div>
+                </div>
+                <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;">
+                    <div class="form-group">
+                        <label class="form-label">Reservation Duration</label>
+                        <input class="form-input" id="addLocResDuration" type="number" placeholder="minutes">
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Reservation Times</label>
+                        <input class="form-input" id="addLocResTimes" placeholder="e.g. 12:00, 13:00, 18:00, 19:00">
+                    </div>
                 </div>
             </div>
             <div class="modal-footer">
@@ -234,16 +307,29 @@ async function renderLocationList(container) {
         if (!brandId) { toast('Brand is required', 'error'); return; }
         if (!leId) { toast('Legal Entity is required', 'error'); return; }
 
+        const resDurationVal = document.getElementById('addLocResDuration').value;
+
         const data = {
             name,
             brand_id: brandId,
             legal_entity_id: leId,
             location_group_id: document.getElementById('addLocLG').value || null,
+            reference: document.getElementById('addLocReference').value || null,
+            phone: document.getElementById('addLocPhone').value || null,
             address: document.getElementById('addLocAddress').value || null,
+            street_number: document.getElementById('addLocStreetNumber').value || null,
             city: document.getElementById('addLocCity').value || null,
+            country: document.getElementById('addLocCountry').value || null,
             latitude: document.getElementById('addLocLat').value ? parseFloat(document.getElementById('addLocLat').value) : null,
             longitude: document.getElementById('addLocLng').value ? parseFloat(document.getElementById('addLocLng').value) : null,
             location_type: document.getElementById('addLocType').value || null,
+            opening_from: document.getElementById('addLocOpeningFrom').value || null,
+            opening_to: document.getElementById('addLocOpeningTo').value || null,
+            inventory_eod_time: document.getElementById('addLocInventoryEod').value || null,
+            receives_online_orders: document.getElementById('addLocOnlineOrders').value === 'true',
+            accepts_reservations: document.getElementById('addLocReservations').value === 'true',
+            reservation_duration: resDurationVal ? parseInt(resDurationVal, 10) : null,
+            reservation_times: document.getElementById('addLocResTimes').value || null,
         };
 
         try {

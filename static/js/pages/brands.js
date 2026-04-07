@@ -53,11 +53,6 @@ async function renderBrandList(container, orgId) {
                             </div>
                             <span class="badge ${statusClass}">${b.status || 'active'}</span>
                         </div>
-                        <div style="display:flex;gap:8px;align-items:center;margin-bottom:12px;">
-                            <span class="badge ${b.loyalty_programme_enabled ? 'badge-green' : 'badge-gray'}">
-                                ${b.loyalty_programme_enabled ? 'Loyalty ON' : 'Loyalty OFF'}
-                            </span>
-                        </div>
                         <button class="btn btn-sm btn-outline" style="width:100%;" onclick="navigate('brands', {brandId: '${b.id}'})">View Details</button>
                     </div>
                 </div>`;
@@ -66,9 +61,12 @@ async function renderBrandList(container, orgId) {
         `}
     `;
 
-    window._brandsShowAddModal = () => {
-        const tree = state.tree;
-        const groups = tree ? tree.groups : [];
+    window._brandsShowAddModal = async () => {
+        const tree = await loadTree();
+        const les = tree ? tree.legal_entities : [];
+        const countries = tree ? tree.countries : [];
+        const lgs = tree ? tree.location_groups : [];
+        const locs = tree ? tree.locations : [];
         openModal(`
             <div class="modal-header">
                 <h3>Add Brand</h3>
@@ -76,26 +74,46 @@ async function renderBrandList(container, orgId) {
             </div>
             <div class="modal-body">
                 <div class="form-group">
-                    <label class="form-label">Name</label>
-                    <input class="form-input" id="addBrandName" placeholder="Brand name">
+                    <label class="form-label">Brand Name *</label>
+                    <input class="form-input" id="addBrandName" placeholder="Brand name" required>
                 </div>
                 <div class="form-group">
-                    <label class="form-label">Group (optional)</label>
-                    <select class="form-select" id="addBrandGroup">
-                        <option value="">None</option>
-                        ${groups.map(g => `<option value="${g.id}">${g.name}</option>`).join('')}
-                    </select>
-                </div>
-                <div class="form-group">
-                    <label class="form-label">Logo URL (optional)</label>
+                    <label class="form-label">Logo URL</label>
                     <input class="form-input" id="addBrandLogo" placeholder="https://...">
                 </div>
                 <div class="form-group">
-                    <label class="form-label">Loyalty Programme</label>
-                    <select class="form-select" id="addBrandLoyalty">
-                        <option value="false">Disabled</option>
-                        <option value="true">Enabled</option>
+                    <label class="form-label">Legal Entity *</label>
+                    <select class="form-select" id="addBrandLE" required>
+                        <option value="">Select a legal entity</option>
+                        ${les.map(le => `<option value="${le.id}">${le.name}</option>`).join('')}
                     </select>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Countries * <span class="text-muted text-sm">(select at least 1)</span></label>
+                    <div id="addBrandCountries" style="max-height:160px;overflow-y:auto;border:1px solid var(--border);border-radius:8px;padding:8px;">
+                        ${countries.length === 0 ? '<span class="text-muted text-sm">No countries available</span>' : countries.map(c => `
+                            <label style="display:flex;align-items:center;gap:8px;padding:4px 0;cursor:pointer;">
+                                <input type="checkbox" value="${c.id}" name="addBrandCountry"> ${c.name} ${c.iso_code ? '(' + c.iso_code + ')' : ''}
+                            </label>
+                        `).join('')}
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Location Group</label>
+                    <select class="form-select" id="addBrandLG">
+                        <option value="">None</option>
+                        ${lgs.map(lg => `<option value="${lg.id}">${lg.name}</option>`).join('')}
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Locations * <span class="text-muted text-sm">(select at least 1)</span></label>
+                    <div id="addBrandLocations" style="max-height:160px;overflow-y:auto;border:1px solid var(--border);border-radius:8px;padding:8px;">
+                        ${locs.length === 0 ? '<span class="text-muted text-sm">No locations available</span>' : locs.map(l => `
+                            <label style="display:flex;align-items:center;gap:8px;padding:4px 0;cursor:pointer;">
+                                <input type="checkbox" value="${l.id}" name="addBrandLocation"> ${l.name}
+                            </label>
+                        `).join('')}
+                    </div>
                 </div>
             </div>
             <div class="modal-footer">
@@ -108,12 +126,16 @@ async function renderBrandList(container, orgId) {
     window._brandsSubmitAdd = async () => {
         const name = document.getElementById('addBrandName').value;
         if (!name) { toast('Name is required', 'error'); return; }
+        const leId = document.getElementById('addBrandLE').value;
+        if (!leId) { toast('Legal Entity is required', 'error'); return; }
+        const selectedCountries = [...document.querySelectorAll('input[name="addBrandCountry"]:checked')].map(cb => cb.value);
+        if (selectedCountries.length === 0) { toast('At least one country is required', 'error'); return; }
+        const selectedLocations = [...document.querySelectorAll('input[name="addBrandLocation"]:checked')].map(cb => cb.value);
+        if (selectedLocations.length === 0) { toast('At least one location is required', 'error'); return; }
         const data = {
             name,
             organisation_id: orgId,
-            group_id: document.getElementById('addBrandGroup').value || null,
             logo_url: document.getElementById('addBrandLogo').value || null,
-            loyalty_programme_enabled: document.getElementById('addBrandLoyalty').value === 'true',
         };
         try {
             await api.createBrand(data);
@@ -177,10 +199,6 @@ async function renderBrandDetail(container, brandId) {
                             <div class="form-group">
                                 <label class="form-label" style="color:#64748B;font-size:12px;text-transform:uppercase;letter-spacing:0.05em;">Logo URL</label>
                                 <div class="text-sm">${brand.logo_url || '<span class="text-muted">Not set</span>'}</div>
-                            </div>
-                            <div class="form-group">
-                                <label class="form-label" style="color:#64748B;font-size:12px;text-transform:uppercase;letter-spacing:0.05em;">Loyalty Programme</label>
-                                <div><span class="badge ${brand.loyalty_programme_enabled ? 'badge-green' : 'badge-gray'}">${brand.loyalty_programme_enabled ? 'Enabled' : 'Disabled'}</span></div>
                             </div>
                             <div class="form-group">
                                 <label class="form-label" style="color:#64748B;font-size:12px;text-transform:uppercase;letter-spacing:0.05em;">Created</label>
@@ -267,13 +285,6 @@ async function renderBrandDetail(container, brandId) {
                                 <input class="form-input" id="brandEditLogo" value="${brand.logo_url || ''}" placeholder="https://...">
                             </div>
                             <div class="form-group">
-                                <label class="form-label">Loyalty Programme</label>
-                                <select class="form-select" id="brandEditLoyalty">
-                                    <option value="true" ${brand.loyalty_programme_enabled ? 'selected' : ''}>Enabled</option>
-                                    <option value="false" ${!brand.loyalty_programme_enabled ? 'selected' : ''}>Disabled</option>
-                                </select>
-                            </div>
-                            <div class="form-group">
                                 <label class="form-label">Status</label>
                                 <select class="form-select" id="brandEditStatus">
                                     <option value="active" ${brand.status === 'active' ? 'selected' : ''}>Active</option>
@@ -296,7 +307,6 @@ async function renderBrandDetail(container, brandId) {
             name: document.getElementById('brandEditName').value,
             group_id: document.getElementById('brandEditGroup').value || null,
             logo_url: document.getElementById('brandEditLogo').value || null,
-            loyalty_programme_enabled: document.getElementById('brandEditLoyalty').value === 'true',
             status: document.getElementById('brandEditStatus').value,
         };
         if (!data.name) { toast('Name is required', 'error'); return; }
