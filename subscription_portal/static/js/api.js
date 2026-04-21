@@ -40,6 +40,12 @@ const API = (() => {
     updateAddonPrice:  (id, currency, price) => req("PUT", `api/catalog/addons/${id}/price`, { currency, price }),
     updateDevicePrice: (id, currency, price) => req("PUT", `api/catalog/devices/${id}/price`, { currency, price }),
     updateSeparatePrice: (id, currency, price) => req("PUT", `api/catalog/separate-tiers/${id}/price`, { currency, price }),
+
+    createPlan:     (body) => req("POST", "api/catalog/plans", body),
+    createAddon:    (body) => req("POST", "api/catalog/addons", body),
+    createDevice:   (body) => req("POST", "api/catalog/devices", body),
+    createSeparate: (body) => req("POST", "api/catalog/separate", body),
+    createCurrency: (body) => req("POST", "api/catalog/currencies", body),
   };
 })();
 
