@@ -54,17 +54,17 @@ const SalesView = (() => {
           </div>
 
           <div class="card">
-            <div class="card-title">Layer 2 · Add-ons <span class="muted small" id="sl-addon-hint"></span></div>
+            <div class="card-title">Layer 3 · Add-ons <span class="muted small" id="sl-addon-hint"></span></div>
             <div class="feature-grid" id="sl-addons"></div>
           </div>
 
           <div class="card">
-            <div class="card-title">Layer 3 · Device licences</div>
+            <div class="card-title">Layer 4 · Device licences</div>
             <div id="sl-devices"></div>
           </div>
 
           <div class="card">
-            <div class="card-title">Layer 4 · Separate products</div>
+            <div class="card-title">Layer 5 · Separate products</div>
             <div class="card-subtitle">Standalone lines with their own contract — Online, Pay, Accounting.</div>
             <div id="sl-separate"></div>
           </div>
@@ -335,12 +335,14 @@ const SalesView = (() => {
     const addonLines = q.lines.filter((l) => l.category === "addon");
     const deviceLines = q.lines.filter((l) => l.category === "device");
     const sepLines = q.lines.filter((l) => l.category === "separate");
+    const locUnit = (q.lines.find((l) => l.category === "location")?.unit_price) || 0;
 
     const panel = document.getElementById("sl-price");
     panel.innerHTML = `
       ${priceHeader()}
       <div class="stack-bar" title="Visual share per layer">
         <div class="stack-plan" style="flex:${t.plan};"></div>
+        <div class="stack-location" style="flex:${t.location || 0};"></div>
         <div class="stack-addons" style="flex:${t.addons};"></div>
         <div class="stack-devices" style="flex:${t.devices};"></div>
         <div class="stack-separate" style="flex:${t.separate};"></div>
@@ -351,17 +353,22 @@ const SalesView = (() => {
         <div class="layer-lines">${state.planId ? `${Store.planById(state.planId).name} × ${state.branches} branch(es)` : ""}</div>
       </div>
 
-      <div class="layer"><div class="layer-name"><span class="legend-dot stack-addons"></span>Layer 2 · Add-ons</div>
+      <div class="layer"><div class="layer-name"><span class="legend-dot stack-location"></span>Layer 2 · Location fee</div>
+        <div class="layer-sum">${money(t.location || 0, t.currency)} <span class="small muted">(${pct(t.location || 0)})</span></div>
+        <div class="layer-lines">${money(locUnit, t.currency)}/branch × ${state.branches} branch(es)</div>
+      </div>
+
+      <div class="layer"><div class="layer-name"><span class="legend-dot stack-addons"></span>Layer 3 · Add-ons</div>
         <div class="layer-sum">${money(t.addons, t.currency)} <span class="small muted">(${pct(t.addons)})</span></div>
         <div class="layer-lines">${addonLines.length ? addonLines.map((l) => l.description.replace(" (add-on)", "")).join(" · ") : "— none"}</div>
       </div>
 
-      <div class="layer"><div class="layer-name"><span class="legend-dot stack-devices"></span>Layer 3 · Devices</div>
+      <div class="layer"><div class="layer-name"><span class="legend-dot stack-devices"></span>Layer 4 · Devices</div>
         <div class="layer-sum">${money(t.devices, t.currency)} <span class="small muted">(${pct(t.devices)})</span></div>
         <div class="layer-lines">${deviceLines.length ? deviceLines.map((l) => l.description).join(" · ") : "— none"}</div>
       </div>
 
-      <div class="layer"><div class="layer-name"><span class="legend-dot stack-separate"></span>Layer 4 · Separate</div>
+      <div class="layer"><div class="layer-name"><span class="legend-dot stack-separate"></span>Layer 5 · Separate</div>
         <div class="layer-sum">${money(t.separate, t.currency)} <span class="small muted">(${pct(t.separate)})</span></div>
         <div class="layer-lines">${sepLines.length ? sepLines.map((l) => l.description).join(" · ") : "— none"}</div>
       </div>

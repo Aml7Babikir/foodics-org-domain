@@ -132,6 +132,7 @@ td.editable input { width: 88px; text-align: right; padding: 5px 7px; border: 1p
 .stack-addons  { background: #ba24d5; }
 .stack-devices { background: #ef6820; }
 .stack-separate{ background: #027a48; }
+.stack-location{ background: #f79009; }
 .legend-dot { display: inline-block; width: 8px; height: 8px; border-radius: 50%; margin-right: 6px; vertical-align: middle; }
 
 /* Stages bar */
