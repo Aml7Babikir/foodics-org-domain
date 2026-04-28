@@ -14,7 +14,7 @@ class NoCacheStaticMiddleware(BaseHTTPMiddleware):
         return response
 from app.models.base import Base
 from app.core.database import engine
-from app.api.routes import hierarchy, config, users, delegation, templates, branches, devices
+from app.api.routes import hierarchy, config, users, delegation, templates
 
 # Create all org-domain tables
 Base.metadata.create_all(bind=engine)
@@ -78,8 +78,6 @@ app.include_router(config.router, prefix="/api/v1")
 app.include_router(users.router, prefix="/api/v1")
 app.include_router(delegation.router, prefix="/api/v1")
 app.include_router(templates.router, prefix="/api/v1")
-app.include_router(branches.router, prefix="/api/v1")
-app.include_router(devices.router, prefix="/api/v1")
 
 # --- Subscription Portal (internal) mounted at /subs ---------------------
 app.include_router(_sp_catalog.router,        prefix="/subs/api")
