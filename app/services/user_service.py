@@ -92,7 +92,15 @@ def invite_user(db: Session, name: str, mobile_number: str, organisation_id: str
 
 
 def activate_user(db: Session, mobile_number: str, otp: str) -> User:
-    """Activate a user account with the activation OTP."""
+    """
+    Activate a user account with the activation OTP.
+
+    Spec §13 (Rule 16): a user must be assigned to ≥1 Branch (Location, either
+    directly or via an ancestor scope) AND ≥1 Role before they can be active.
+    The invite flow always creates one RoleAssignment, so the role check is
+    typically satisfied — but the assignment scope must resolve to at least one
+    accessible Location, otherwise activation is rejected.
+    """
     user = get_user_by_mobile(db, mobile_number)
     if not user:
         raise ValueError("User not found")
@@ -102,6 +110,17 @@ def activate_user(db: Session, mobile_number: str, otp: str) -> User:
         raise ValueError("Activation OTP has expired")
     if user.activation_otp_hash != _hash_otp(otp):
         raise ValueError("Invalid OTP")
+
+    # Spec §13 Rule 16: enforce role + branch coverage.
+    assignments = get_user_assignments(db, user.id)
+    if not assignments:
+        raise ValueError("User cannot activate: no role assigned (Spec §13)")
+    accessible = get_user_accessible_locations(db, user.id)
+    if not accessible:
+        raise ValueError(
+            "User cannot activate: assigned role does not cover any branch "
+            "(Spec §13 — a user must be assigned to at least one branch)"
+        )
 
     user.status = "active"
     user.activation_otp_hash = None

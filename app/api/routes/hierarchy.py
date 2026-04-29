@@ -265,6 +265,45 @@ def list_locations(location_group_id: str = None, legal_entity_id: str = None,
     return svc.list_locations(db, location_group_id=location_group_id,
                               legal_entity_id=legal_entity_id, brand_id=brand_id)
 
+
+# Static routes MUST be declared before /locations/{loc_id} so FastAPI matches
+# them first — otherwise "copy-groups" gets routed as a Location id.
+@router.get("/locations/copy-groups")
+def list_location_copy_groups():
+    """Spec §2.2: list of selectable setting groups for branch-to-branch copy."""
+    return {
+        "groups": [
+            {"key": k, "columns": cols}
+            for k, cols in svc.LOCATION_COPY_GROUPS.items()
+        ]
+    }
+
+
+@router.post("/locations/{src_id}/copy-to/{dst_id}", response_model=LocationOut)
+def copy_location_settings(
+    src_id: str,
+    dst_id: str,
+    body: dict,
+    db: Session = Depends(get_db),
+):
+    """
+    Spec §2.2: copy selected branch settings from src → dst.
+    Body: {"groups": ["basic_info", "opening_hours", ...]}
+    """
+    groups = body.get("groups") or []
+    if not groups:
+        raise HTTPException(status_code=400, detail="`groups` cannot be empty")
+    try:
+        dst = svc.copy_location_settings(db, src_id, dst_id, groups)
+    except ValueError as e:
+        raise HTTPException(status_code=400, detail=str(e))
+    if not dst:
+        raise HTTPException(status_code=404, detail="Source or destination not found")
+    db.commit()
+    db.refresh(dst)
+    return dst
+
+
 @router.get("/locations/{loc_id}", response_model=LocationOut)
 def get_location(loc_id: str, db: Session = Depends(get_db)):
     loc = svc.get_location(db, loc_id)

@@ -67,6 +67,8 @@ class Brand(BaseModel):
     organisation_id = Column(String(36), ForeignKey("organisations.id"), nullable=False)
     group_id = Column(String(36), ForeignKey("groups.id"), nullable=True)
     logo_url = Column(String(500))
+    receipt_header = Column(Text)        # Per-brand receipt header (Spec §2.1)
+    receipt_footer = Column(Text)        # Per-brand receipt footer (Spec §2.1)
     loyalty_programme_enabled = Column(Boolean, default=False)
     status = Column(String(20), default="active")
 
@@ -216,6 +218,19 @@ class Location(BaseModel):
     is_active = Column(Boolean, default=True)
     template_id = Column(String(36), ForeignKey("location_templates.id"), nullable=True)
     status = Column(String(20), default="active")
+
+    # Branch-spec fields (Spec §2.2):
+    localized_name = Column(String(255))                  # Localized display name
+    branch_type = Column(String(50))                      # e.g. dine_in, qsr, ghost, hybrid
+    tax_registration_name = Column(String(255))           # ZATCA: legal/tax registration name
+    tax_number = Column(String(100))                      # ZATCA: tax registration number
+    commercial_registration = Column(String(100))         # ZATCA: required for cashier activation
+    receives_call_center_orders = Column(Boolean, default=False)
+    enable_dms_delivery = Column(Boolean, default=False)  # Delivery Management System
+    course_management_enabled = Column(Boolean, default=False)
+    print_on_hold = Column(Boolean, default=False)        # Course-mgmt sub-config
+    unhold_in_kitchen = Column(Boolean, default=False)
+    auto_hold_all_courses = Column(Boolean, default=False)
 
     legal_entity = relationship("LegalEntity", back_populates="locations")
     brand = relationship("Brand")

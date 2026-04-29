@@ -13,7 +13,15 @@ from app.models.base import BaseModel
 
 
 class User(BaseModel):
-    """A team member in the system. Mobile number is the primary identifier."""
+    """
+    A team member in the system. Mobile number is the primary identifier.
+
+    Spec §13.2 — supports two user types (Cashier, Console) plus combined.
+    Cashier users authenticate with PIN; Console users with email + password.
+    A user must be assigned to at least one Branch (Location, directly or via
+    an ancestor scope) AND have at least one Role to become active (Spec §17
+    Rules 16, 17, 18 — multiple roles are additive).
+    """
     __tablename__ = "users"
 
     name = Column(String(255), nullable=False)
@@ -21,13 +29,35 @@ class User(BaseModel):
     email = Column(String(255), nullable=True)
     employee_id = Column(String(50), nullable=True)
     organisation_id = Column(String(36), nullable=False, index=True)
-    pin_hash = Column(String(255), nullable=True)  # for POS access
-    status = Column(String(20), default="invited")  # invited, active, offboarded
+
+    # Authentication (Spec §13.2):
+    pin_hash = Column(String(255), nullable=True)               # Cashier login PIN — never displayed
+    password_hash = Column(String(255), nullable=True)          # Console login (email + password)
+    email_password_enabled = Column(Boolean, default=False)
+
+    # Verification status (Spec §13.2):
+    email_verified = Column(Boolean, default=False)
+    email_verified_at = Column(DateTime, nullable=True)
+
+    # Lifecycle:
+    status = Column(String(20), default="invited")              # invited, active, offboarded
     activation_otp_hash = Column(String(255), nullable=True)
     activation_otp_expires = Column(DateTime, nullable=True)
     access_expiry = Column(DateTime, nullable=True)
     offboarded_at = Column(DateTime, nullable=True)
-    email_password_enabled = Column(Boolean, default=False)
+
+    # User type (Spec §13.2):
+    #   cashier  → PIN only, accesses cashier app
+    #   console  → email/password only, accesses Console
+    #   both     → access to both surfaces
+    user_type = Column(String(20), default="console")
+
+    # Tags (Spec §9.5 + §13.2) — comma-separated Tag IDs where applies_to='user'.
+    tag_ids = Column(Text, nullable=True)
+
+    # Notification preferences (Spec §13.2 + §14) — per-channel opt-in.
+    # Stored as JSON: {"email": true, "in_app": false, "sms": false, "push": false}.
+    notification_preferences = Column(JSON, nullable=True)
 
 
 class Role(BaseModel):

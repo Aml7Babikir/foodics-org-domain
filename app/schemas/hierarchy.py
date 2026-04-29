@@ -64,12 +64,16 @@ class BrandCreate(BaseModel):
     organisation_id: str
     group_id: Optional[str] = None
     logo_url: Optional[str] = None
+    receipt_header: Optional[str] = None
+    receipt_footer: Optional[str] = None
     loyalty_programme_enabled: bool = False
 
 class BrandUpdate(BaseModel):
     name: Optional[str] = None
     group_id: Optional[str] = None
     logo_url: Optional[str] = None
+    receipt_header: Optional[str] = None
+    receipt_footer: Optional[str] = None
     loyalty_programme_enabled: Optional[bool] = None
 
 class BrandOut(BaseModel):
@@ -78,6 +82,8 @@ class BrandOut(BaseModel):
     organisation_id: str
     group_id: Optional[str]
     logo_url: Optional[str]
+    receipt_header: Optional[str] = None
+    receipt_footer: Optional[str] = None
     loyalty_programme_enabled: bool
     status: str
     created_at: datetime
@@ -258,6 +264,18 @@ class LocationCreate(BaseModel):
     accepts_reservations: bool = False
     reservation_duration: Optional[int] = None
     reservation_times: Optional[str] = None
+    # Spec §2.2 branch fields:
+    localized_name: Optional[str] = None
+    branch_type: Optional[str] = None
+    tax_registration_name: Optional[str] = None
+    tax_number: Optional[str] = None
+    commercial_registration: Optional[str] = None
+    receives_call_center_orders: bool = False
+    enable_dms_delivery: bool = False
+    course_management_enabled: bool = False
+    print_on_hold: bool = False
+    unhold_in_kitchen: bool = False
+    auto_hold_all_courses: bool = False
 
 class LocationUpdate(BaseModel):
     name: Optional[str] = None
@@ -279,6 +297,17 @@ class LocationUpdate(BaseModel):
     accepts_reservations: Optional[bool] = None
     reservation_duration: Optional[int] = None
     reservation_times: Optional[str] = None
+    localized_name: Optional[str] = None
+    branch_type: Optional[str] = None
+    tax_registration_name: Optional[str] = None
+    tax_number: Optional[str] = None
+    commercial_registration: Optional[str] = None
+    receives_call_center_orders: Optional[bool] = None
+    enable_dms_delivery: Optional[bool] = None
+    course_management_enabled: Optional[bool] = None
+    print_on_hold: Optional[bool] = None
+    unhold_in_kitchen: Optional[bool] = None
+    auto_hold_all_courses: Optional[bool] = None
 
 class LocationOut(BaseModel):
     id: str
@@ -302,6 +331,18 @@ class LocationOut(BaseModel):
     location_type: str
     is_active: bool
     status: str
+    # Spec §2.2 branch fields (optional defaults so old records still validate):
+    localized_name: Optional[str] = None
+    branch_type: Optional[str] = None
+    tax_registration_name: Optional[str] = None
+    tax_number: Optional[str] = None
+    commercial_registration: Optional[str] = None
+    receives_call_center_orders: bool = False
+    enable_dms_delivery: bool = False
+    course_management_enabled: bool = False
+    print_on_hold: bool = False
+    unhold_in_kitchen: bool = False
+    auto_hold_all_courses: bool = False
     created_at: datetime
     class Config:
         from_attributes = True

@@ -14,7 +14,9 @@ class NoCacheStaticMiddleware(BaseHTTPMiddleware):
         return response
 from app.models.base import Base
 from app.core.database import engine
-from app.api.routes import hierarchy, config, users, delegation, templates
+# Import models so SQLAlchemy registers the tables before create_all().
+from app.models import manage as _manage_models  # noqa: F401
+from app.api.routes import hierarchy, config, users, delegation, templates, manage
 
 # Create all org-domain tables
 Base.metadata.create_all(bind=engine)
@@ -61,6 +63,89 @@ with engine.connect() as conn:
             conn.execute(text(f"ALTER TABLE locations ADD COLUMN {col} {ctype}"))
     conn.commit()
 
+    # ── Spec §2.1 / §2.2: brand receipt fields + branch ZATCA/DMS/course config
+    brand_cols = [c["name"] for c in inspector.get_columns("brands")]
+    for col, ctype in [("receipt_header", "TEXT"), ("receipt_footer", "TEXT")]:
+        if col not in brand_cols:
+            conn.execute(text(f"ALTER TABLE brands ADD COLUMN {col} {ctype}"))
+    conn.commit()
+
+    loc_cols2 = [c["name"] for c in inspector.get_columns("locations")]
+    branch_spec_migrations = [
+        ("localized_name", "VARCHAR(255)"),
+        ("branch_type", "VARCHAR(50)"),
+        ("tax_registration_name", "VARCHAR(255)"),
+        ("tax_number", "VARCHAR(100)"),
+        ("commercial_registration", "VARCHAR(100)"),
+        ("receives_call_center_orders", "BOOLEAN DEFAULT 0"),
+        ("enable_dms_delivery", "BOOLEAN DEFAULT 0"),
+        ("course_management_enabled", "BOOLEAN DEFAULT 0"),
+        ("print_on_hold", "BOOLEAN DEFAULT 0"),
+        ("unhold_in_kitchen", "BOOLEAN DEFAULT 0"),
+        ("auto_hold_all_courses", "BOOLEAN DEFAULT 0"),
+    ]
+    for col, ctype in branch_spec_migrations:
+        if col not in loc_cols2:
+            conn.execute(text(f"ALTER TABLE locations ADD COLUMN {col} {ctype}"))
+    conn.commit()
+
+    # ── Spec §10 / §12 / §14: reasons / reservations / notifications fields
+    rsn_cols = [c["name"] for c in inspector.get_columns("reasons")]
+    if "is_system" not in rsn_cols:
+        conn.execute(text("ALTER TABLE reasons ADD COLUMN is_system BOOLEAN DEFAULT 0"))
+    conn.commit()
+
+    res_cols = [c["name"] for c in inspector.get_columns("reservation_settings")]
+    for col, ctype in [
+        ("days_of_week", "VARCHAR(40)"),
+        ("auto_accept_online", "BOOLEAN DEFAULT 0"),
+        ("table_ids", "TEXT"),
+    ]:
+        if col not in res_cols:
+            conn.execute(text(f"ALTER TABLE reservation_settings ADD COLUMN {col} {ctype}"))
+    conn.commit()
+
+    ntf_cols = [c["name"] for c in inspector.get_columns("notification_settings")]
+    for col, ctype in [
+        ("frequency", "VARCHAR(20) DEFAULT 'immediate'"),
+        ("apply_on", "TEXT"),
+    ]:
+        if col not in ntf_cols:
+            conn.execute(text(f"ALTER TABLE notification_settings ADD COLUMN {col} {ctype}"))
+    conn.commit()
+
+    # ── Spec §13.2: Console-vs-Cashier user fields, tags, notification prefs.
+    user_cols = [c["name"] for c in inspector.get_columns("users")]
+    user_spec_migrations = [
+        ("password_hash", "VARCHAR(255)"),
+        ("email_verified", "BOOLEAN DEFAULT 0"),
+        ("email_verified_at", "DATETIME"),
+        ("user_type", "VARCHAR(20) DEFAULT 'console'"),
+        ("tag_ids", "TEXT"),
+        ("notification_preferences", "JSON"),
+    ]
+    for col, ctype in user_spec_migrations:
+        if col not in user_cols:
+            conn.execute(text(f"ALTER TABLE users ADD COLUMN {col} {ctype}"))
+    conn.commit()
+
+# Backfill predefined Taxes / Reasons / Courses for every existing org, and
+# seed idempotent dummy data for the Manage entities so the Console isn't empty
+# in demos. Both helpers are zero-effect when records already exist.
+from app.core.database import SessionLocal
+from app.models.hierarchy import Organisation
+from app.services.manage_service import (
+    ensure_org_predefined,
+    ensure_org_dummy_data,
+    ensure_brand_and_branch_dummy_fields,
+)
+with SessionLocal() as _db:
+    for _org in _db.query(Organisation).all():
+        ensure_org_predefined(_db, _org.id)
+        ensure_brand_and_branch_dummy_fields(_db, _org.id)
+        ensure_org_dummy_data(_db, _org.id)
+    _db.commit()
+
 app = FastAPI(
     title="Foodics Organisation Domain API",
     description="Unified Merchant Hierarchy, Configuration Inheritance, Scoped Roles & Permissions, and Franchise Delegation",
@@ -78,6 +163,7 @@ app.include_router(config.router, prefix="/api/v1")
 app.include_router(users.router, prefix="/api/v1")
 app.include_router(delegation.router, prefix="/api/v1")
 app.include_router(templates.router, prefix="/api/v1")
+app.include_router(manage.router, prefix="/api/v1")
 
 # --- Subscription Portal (internal) mounted at /subs ---------------------
 app.include_router(_sp_catalog.router,        prefix="/subs/api")

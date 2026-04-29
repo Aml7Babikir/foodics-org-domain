@@ -20,6 +20,12 @@ class UserOut(BaseModel):
     organisation_id: str
     status: str
     access_expiry: Optional[datetime]
+    # Spec §13.2 fields:
+    user_type: Optional[str] = "console"
+    email_verified: Optional[bool] = False
+    email_verified_at: Optional[datetime] = None
+    tag_ids: Optional[str] = None
+    notification_preferences: Optional[dict] = None
     created_at: datetime
     class Config:
         from_attributes = True

@@ -48,6 +48,11 @@ def create_organisation(db: Session, data: dict) -> Organisation:
     default_group = Group(name=f"{org.name} (Default Group)", organisation_id=org.id, is_default=True)
     db.add(default_group)
     db.flush()
+    # Seed every system-default config record for this org: Tobacco Tax,
+    # predefined Reasons (void/return/quantity-adjustment/drawer-op/blacklist),
+    # and dining Courses (Drinks/Appetizers/Mains/Dessert).
+    from app.services.manage_service import ensure_org_predefined
+    ensure_org_predefined(db, org.id)
     return org
 
 
@@ -387,6 +392,56 @@ def list_locations(db: Session, location_group_id: str = None, legal_entity_id: 
     if brand_id:
         q = q.filter(Location.brand_id == brand_id)
     return q.all()
+
+
+# Spec §2.2: "Branch settings can be copied from one branch to another. When
+# copying, the user can select which settings to duplicate." Each group below
+# maps to a set of Location columns the operator can opt into copying.
+LOCATION_COPY_GROUPS = {
+    "basic_info":    ["address", "city", "country", "street_number", "phone", "reference"],
+    "opening_hours": ["opening_from", "opening_to", "inventory_eod_time"],
+    "zatca":         ["tax_registration_name", "tax_number", "commercial_registration"],
+    "online_orders": ["receives_online_orders", "receives_call_center_orders"],
+    "delivery":      ["enable_dms_delivery"],
+    "course_mgmt":   [
+        "course_management_enabled", "print_on_hold",
+        "unhold_in_kitchen", "auto_hold_all_courses",
+    ],
+    "reservations":  ["accepts_reservations", "reservation_duration", "reservation_times"],
+    "branch_meta":   ["localized_name", "branch_type"],
+}
+
+
+def copy_location_settings(
+    db: Session, src_id: str, dst_id: str, groups: list[str]
+) -> Optional[Location]:
+    """
+    Copy selected setting groups from one branch to another (Spec §2.2).
+
+    `groups` is a list of keys from LOCATION_COPY_GROUPS. Unknown keys raise.
+    Identity fields (id, name, brand_id, legal_entity_id, location_group_id,
+    template_id, status, created_at, updated_at) are NEVER copied — copying
+    would break referential integrity and the spec only covers configuration.
+    """
+    src = get_location(db, src_id)
+    dst = get_location(db, dst_id)
+    if not src or not dst:
+        return None
+    if src.id == dst.id:
+        raise ValueError("Source and destination branches must differ")
+
+    unknown = [g for g in groups if g not in LOCATION_COPY_GROUPS]
+    if unknown:
+        raise ValueError(
+            f"Unknown copy groups: {unknown}. "
+            f"Allowed: {sorted(LOCATION_COPY_GROUPS)}"
+        )
+
+    for g in groups:
+        for col in LOCATION_COPY_GROUPS[g]:
+            setattr(dst, col, getattr(src, col))
+    db.flush()
+    return dst
 
 
 # --- Full hierarchy tree ---

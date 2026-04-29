@@ -191,3 +191,49 @@ After signup, the **dashboard setup guide** adapts to the selected business stru
 | Config resolution latency | < 50ms per key lookup |
 | Role assignment coverage | Any of 8 hierarchy levels |
 | Franchise isolation | Zero cross-LE data leakage |
+
+---
+
+## Manage Settings Spec Coverage
+
+This squad owns the Manage Settings / Business Setup / User Management area
+(per the System Specification dated April 2026). The table below tracks each
+spec section against its implementation status in this codebase.
+
+| Spec § | Area                | Status | Notes |
+|--------|---------------------|--------|-------|
+| 2.1    | Brands              | Built  | `Brand` + `receipt_header`, `receipt_footer`, status. Brand-as-product-tag relation owned by Menu squad. |
+| 2.2    | Branches / Locations | Built  | `Location` extended with `localized_name`, `branch_type`, ZATCA fields, DMS toggle, course-management toggles. **Branch settings copy** at `POST /hierarchy/locations/{src}/copy-to/{dst}` with selectable groups (`basic_info`, `opening_hours`, `zatca`, `online_orders`, `delivery`, `course_mgmt`, `reservations`, `branch_meta`). |
+| 2.3    | Branch Tags         | Built  | `Tag.applies_to='branch'`. |
+| 2.4    | Delivery Zones      | Built  | `DeliveryZone` (org + optional location). DMS-vs-zone consumer is the open question per spec. |
+| 3.1    | Sections            | Built  | `Section` (per location). |
+| 3.2    | Table Management    | Out of scope | Android-only floor designer; not built in Console. |
+| 4      | Charges             | Partial | `Charge` exists at org level. Branch-charge link table is **not** built — spec flags charge model as open. |
+| 5      | Timed Events        | Built  | `TimedEvent` with 6 type variants. Logic owned by Menu/Promotions. |
+| 6      | Payment Method Overrides | Built | `BranchPaymentMethodOverride` link entity. |
+| 7      | DMS Delivery        | Config-only | `Location.enable_dms_delivery` toggle. Workflow owned by Delivery squad. |
+| 8      | Course Management   | Built  | `Course` entity + per-branch toggles on `Location` + 4 seeded system courses (Drinks, Appetizers, Main Course, Dessert). |
+| 9      | Tags                | Built  | All 7 entity types: `branch`, `customer`, `inventory_item`, `supplier`, `user`, `order`, `product`. |
+| 10     | Reasons             | Built  | All 5 categories + 10 seeded system reasons (`is_system=true`). |
+| 11     | Revenue Centers     | Built  | `RevenueCenter` with section/table/device CSV refs. RMS-reporting only — never accounting. |
+| 12     | Reservations        | Built  | `ReservationSetting` with days-of-week, auto-accept-online, table_ids; **server-side ≥30-min validation**. iOS Console only — Android uses ServeMe. |
+| 13.1   | Roles               | Built  | Multiple roles per user, **additive** permissions (Spec §17 Rule 18). |
+| 13.2   | Users               | Built  | `User` extended with `password_hash`, `email_verified`, `email_verified_at`, `user_type` (cashier/console/both), `tag_ids`, `notification_preferences`. **Activation guard enforces ≥1 role + ≥1 accessible Branch** (Spec §17 Rule 16). |
+| 14     | Notification Rules  | Built  | `NotificationSetting` with `event_type`, `channel`, `frequency`, `apply_on` (JSON conditions), `recipients`. Email-default per spec. |
+| 15     | Digital Channels    | Partial | Online Ordering / Pay at Table / Kitchen Flow / Devices all CRUD-modelled; Call-Center + Digital-Channels surfaces remain open per spec. |
+
+**Spec rules enforced in code:**
+- §17.1 — multiple Brands per Organisation (M:N via `brand_legal_entity`)
+- §17.5 — branch ZATCA fields exposed and required for cashier activation downstream
+- §17.8 — global payment methods + per-branch override entity
+- §17.9–10 — Tags scoped per `applies_to` value
+- §17.11 — Reasons are organisation-scoped (no branch/register/user binding)
+- §17.16 — User activation rejects if no role assignment OR no accessible Location
+- §17.18 — additive permissions (existing `RoleAssignment` model semantics)
+
+**Open questions left for cross-squad alignment** (intentionally not modelled):
+- DMS data flow vs. branch delivery zones (§2.4 / §7)
+- ServeMe ↔ Console reservation source-of-truth (§12)
+- Notification action enum + non-email channels (§14)
+- Revenue-center scope: per-account vs. fine-dining-only (§11)
+- Charge model: global-then-link vs. branch-direct (§4)
