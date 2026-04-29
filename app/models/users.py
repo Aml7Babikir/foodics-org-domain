@@ -55,9 +55,39 @@ class User(BaseModel):
     # Tags (Spec §9.5 + §13.2) — comma-separated Tag IDs where applies_to='user'.
     tag_ids = Column(Text, nullable=True)
 
-    # Notification preferences (Spec §13.2 + §14) — per-channel opt-in.
-    # Stored as JSON: {"email": true, "in_app": false, "sms": false, "push": false}.
+    # Account-page Profile tab (Spec — Account → My Profile):
+    language = Column(String(10), default="en")                 # en, ar, es, fr
+    display_localized_names = Column(Boolean, default=False)
+
+    # Notification preferences (Spec — My Profile + §14). Stored as JSON.
+    # Keys match the 15 inventory-event flags in the My Profile spec:
+    #   toggle_all, cost_adjustment_submitted, inventory_count_submitted,
+    #   purchasing_submitted, quantity_adjustment_submitted, supplier_return,
+    #   transfer_received, production_submitted, sent_inventory,
+    #   item_unavailable, purchase_order_needs_approval, item_max_quantity,
+    #   item_min_quantity, transfer_order_review, transfer_waiting_receipt
+    # Plus channel preferences (email/in_app/sms/push) from §14.
     notification_preferences = Column(JSON, nullable=True)
+
+
+# Canonical list of inventory notification event keys (Spec — Account → My
+# Profile). Used by the Account page UI and to seed sensible defaults.
+INVENTORY_NOTIFICATION_EVENTS = (
+    "cost_adjustment_submitted",
+    "inventory_count_submitted",
+    "purchasing_submitted",
+    "quantity_adjustment_submitted",
+    "supplier_return",
+    "transfer_received",
+    "production_submitted",
+    "sent_inventory",
+    "item_unavailable",
+    "purchase_order_needs_approval",
+    "item_max_quantity",
+    "item_min_quantity",
+    "transfer_order_review",
+    "transfer_waiting_receipt",
+)
 
 
 class Role(BaseModel):

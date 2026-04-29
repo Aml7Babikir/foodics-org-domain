@@ -123,10 +123,71 @@ with engine.connect() as conn:
         ("user_type", "VARCHAR(20) DEFAULT 'console'"),
         ("tag_ids", "TEXT"),
         ("notification_preferences", "JSON"),
+        # Account → My Profile:
+        ("language", "VARCHAR(10) DEFAULT 'en'"),
+        ("display_localized_names", "BOOLEAN DEFAULT 0"),
     ]
     for col, ctype in user_spec_migrations:
         if col not in user_cols:
             conn.execute(text(f"ALTER TABLE users ADD COLUMN {col} {ctype}"))
+    conn.commit()
+
+    # ── Account → LE/Brand/Location migration: contact + general fields move
+    # off the Organisation onto the right hierarchy node.
+    le_cols2 = [c["name"] for c in inspector.get_columns("legal_entities")]
+    le_account_migrations = [
+        ("owner_phone", "VARCHAR(50)"),
+        ("account_number", "VARCHAR(50)"),
+        ("business_category", "VARCHAR(80)"),
+        ("business_subcategory", "VARCHAR(80)"),
+        ("tax_registration_name", "VARCHAR(255)"),
+        ("tax_number", "VARCHAR(100)"),
+    ]
+    for col, ctype in le_account_migrations:
+        if col not in le_cols2:
+            conn.execute(text(f"ALTER TABLE legal_entities ADD COLUMN {col} {ctype}"))
+    conn.commit()
+
+    brand_cols2 = [c["name"] for c in inspector.get_columns("brands")]
+    for col, ctype in [("contact_email", "VARCHAR(255)"), ("contact_phone", "VARCHAR(50)")]:
+        if col not in brand_cols2:
+            conn.execute(text(f"ALTER TABLE brands ADD COLUMN {col} {ctype}"))
+    conn.commit()
+
+    loc_cols3 = [c["name"] for c in inspector.get_columns("locations")]
+    if "contact_email" not in loc_cols3:
+        conn.execute(text("ALTER TABLE locations ADD COLUMN contact_email VARCHAR(255)"))
+    conn.commit()
+
+    # ── Account page (Profile/Business Details/Support/Licenses): organisation cols
+    org_cols = [c["name"] for c in inspector.get_columns("organisations")]
+    org_account_migrations = [
+        ("account_number", "VARCHAR(50)"),
+        ("business_category", "VARCHAR(80)"),
+        ("business_subcategory", "VARCHAR(80)"),
+        ("tax_registration_name", "VARCHAR(255)"),
+        ("commercial_registration", "VARCHAR(100)"),
+        ("tax_number", "VARCHAR(100)"),
+        ("country", "VARCHAR(100)"),
+        ("currency", "VARCHAR(3)"),
+        ("primary_email", "VARCHAR(255)"),
+        ("owner_email", "VARCHAR(255)"),
+        ("owner_phone", "VARCHAR(50)"),
+        ("time_zone", "VARCHAR(60) DEFAULT 'Asia/Riyadh'"),
+        ("tax_inclusive_pricing", "BOOLEAN DEFAULT 1"),
+        ("enable_localization", "BOOLEAN DEFAULT 0"),
+        ("restrict_purchased_items_to_supplier", "BOOLEAN DEFAULT 0"),
+        ("enable_insurance_products", "BOOLEAN DEFAULT 0"),
+        ("two_factor_enabled", "BOOLEAN DEFAULT 0"),
+        ("account_manager_name", "VARCHAR(255)"),
+        ("account_manager_email", "VARCHAR(255)"),
+        ("support_access_granted_until", "DATETIME"),
+        ("account_package_type", "VARCHAR(80)"),
+        ("account_creation_email", "VARCHAR(255)"),
+    ]
+    for col, ctype in org_account_migrations:
+        if col not in org_cols:
+            conn.execute(text(f"ALTER TABLE organisations ADD COLUMN {col} {ctype}"))
     conn.commit()
 
 # Backfill predefined Taxes / Reasons / Courses for every existing org, and
@@ -138,12 +199,17 @@ from app.services.manage_service import (
     ensure_org_predefined,
     ensure_org_dummy_data,
     ensure_brand_and_branch_dummy_fields,
+    ensure_account_dummy_fields,
+    migrate_account_fields_to_le_brand_location,
 )
 with SessionLocal() as _db:
     for _org in _db.query(Organisation).all():
         ensure_org_predefined(_db, _org.id)
+        ensure_account_dummy_fields(_db, _org.id)
         ensure_brand_and_branch_dummy_fields(_db, _org.id)
         ensure_org_dummy_data(_db, _org.id)
+        # One-time move (idempotent): copy Account fields off Org onto LE/Brand/Location.
+        migrate_account_fields_to_le_brand_location(_db, _org.id)
     _db.commit()
 
 app = FastAPI(

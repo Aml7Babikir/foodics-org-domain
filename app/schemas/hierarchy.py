@@ -10,6 +10,12 @@ class OrganisationCreate(BaseModel):
     billing_email: Optional[str] = None
     sso_enabled: bool = False
     data_residency_region: Optional[str] = None
+    # Account → Business Details (passed at create time so seeders can pre-fill):
+    business_category: Optional[str] = None
+    business_subcategory: Optional[str] = None
+    country: Optional[str] = None
+    currency: Optional[str] = None
+    time_zone: Optional[str] = "Asia/Riyadh"
 
 class OrganisationUpdate(BaseModel):
     name: Optional[str] = None
@@ -17,6 +23,32 @@ class OrganisationUpdate(BaseModel):
     sso_enabled: Optional[bool] = None
     data_residency_region: Optional[str] = None
     status: Optional[str] = None
+    # Account → Business Details (General):
+    account_number: Optional[str] = None
+    business_category: Optional[str] = None
+    business_subcategory: Optional[str] = None
+    tax_registration_name: Optional[str] = None
+    commercial_registration: Optional[str] = None
+    tax_number: Optional[str] = None
+    country: Optional[str] = None
+    currency: Optional[str] = None
+    # Account → Business Details (Contacts):
+    primary_email: Optional[str] = None
+    owner_email: Optional[str] = None
+    owner_phone: Optional[str] = None
+    # Account → Business Details (Settings):
+    time_zone: Optional[str] = None
+    tax_inclusive_pricing: Optional[bool] = None
+    enable_localization: Optional[bool] = None
+    restrict_purchased_items_to_supplier: Optional[bool] = None
+    enable_insurance_products: Optional[bool] = None
+    two_factor_enabled: Optional[bool] = None
+    # Account → Support tab:
+    account_manager_name: Optional[str] = None
+    account_manager_email: Optional[str] = None
+    # Account → Licenses & Invoices tab:
+    account_package_type: Optional[str] = None
+    account_creation_email: Optional[str] = None
 
 class OrganisationOut(BaseModel):
     id: str
@@ -25,6 +57,29 @@ class OrganisationOut(BaseModel):
     sso_enabled: bool
     data_residency_region: Optional[str]
     status: str
+    # Account-page fields (all optional defaults so old rows still validate):
+    account_number: Optional[str] = None
+    business_category: Optional[str] = None
+    business_subcategory: Optional[str] = None
+    tax_registration_name: Optional[str] = None
+    commercial_registration: Optional[str] = None
+    tax_number: Optional[str] = None
+    country: Optional[str] = None
+    currency: Optional[str] = None
+    primary_email: Optional[str] = None
+    owner_email: Optional[str] = None
+    owner_phone: Optional[str] = None
+    time_zone: Optional[str] = None
+    tax_inclusive_pricing: Optional[bool] = True
+    enable_localization: Optional[bool] = False
+    restrict_purchased_items_to_supplier: Optional[bool] = False
+    enable_insurance_products: Optional[bool] = False
+    two_factor_enabled: Optional[bool] = False
+    account_manager_name: Optional[str] = None
+    account_manager_email: Optional[str] = None
+    support_access_granted_until: Optional[datetime] = None
+    account_package_type: Optional[str] = None
+    account_creation_email: Optional[str] = None
     created_at: datetime
     class Config:
         from_attributes = True
@@ -67,6 +122,9 @@ class BrandCreate(BaseModel):
     receipt_header: Optional[str] = None
     receipt_footer: Optional[str] = None
     loyalty_programme_enabled: bool = False
+    # Account → Business Details Contacts moved here:
+    contact_email: Optional[str] = None
+    contact_phone: Optional[str] = None
 
 class BrandUpdate(BaseModel):
     name: Optional[str] = None
@@ -75,6 +133,8 @@ class BrandUpdate(BaseModel):
     receipt_header: Optional[str] = None
     receipt_footer: Optional[str] = None
     loyalty_programme_enabled: Optional[bool] = None
+    contact_email: Optional[str] = None
+    contact_phone: Optional[str] = None
 
 class BrandOut(BaseModel):
     id: str
@@ -85,6 +145,8 @@ class BrandOut(BaseModel):
     receipt_header: Optional[str] = None
     receipt_footer: Optional[str] = None
     loyalty_programme_enabled: bool
+    contact_email: Optional[str] = None
+    contact_phone: Optional[str] = None
     status: str
     created_at: datetime
     class Config:
@@ -135,6 +197,13 @@ class LegalEntityCreate(BaseModel):
     email: Optional[str] = None
     owner_name: Optional[str] = None
     is_franchise: bool = False
+    # Account → Business Details (General + Contacts moved here):
+    owner_phone: Optional[str] = None
+    account_number: Optional[str] = None
+    business_category: Optional[str] = None
+    business_subcategory: Optional[str] = None
+    tax_registration_name: Optional[str] = None
+    tax_number: Optional[str] = None
 
     @validator("vat_registration_number")
     def validate_vat(cls, v, values):
@@ -164,6 +233,13 @@ class LegalEntityUpdate(BaseModel):
     email: Optional[str] = None
     owner_name: Optional[str] = None
     is_franchise: Optional[bool] = None
+    # Account → Business Details:
+    owner_phone: Optional[str] = None
+    account_number: Optional[str] = None
+    business_category: Optional[str] = None
+    business_subcategory: Optional[str] = None
+    tax_registration_name: Optional[str] = None
+    tax_number: Optional[str] = None
 
     @validator("vat_registration_number")
     def validate_vat(cls, v, values):
@@ -187,6 +263,13 @@ class LegalEntityOut(BaseModel):
     email: Optional[str]
     owner_name: Optional[str]
     is_franchise: bool
+    # Account → Business Details (General + Contacts):
+    owner_phone: Optional[str] = None
+    account_number: Optional[str] = None
+    business_category: Optional[str] = None
+    business_subcategory: Optional[str] = None
+    tax_registration_name: Optional[str] = None
+    tax_number: Optional[str] = None
     status: str
     created_at: datetime
     class Config:
@@ -276,6 +359,8 @@ class LocationCreate(BaseModel):
     print_on_hold: bool = False
     unhold_in_kitchen: bool = False
     auto_hold_all_courses: bool = False
+    # Account → Business Details Contacts moved here:
+    contact_email: Optional[str] = None
 
 class LocationUpdate(BaseModel):
     name: Optional[str] = None
@@ -308,6 +393,7 @@ class LocationUpdate(BaseModel):
     print_on_hold: Optional[bool] = None
     unhold_in_kitchen: Optional[bool] = None
     auto_hold_all_courses: Optional[bool] = None
+    contact_email: Optional[str] = None
 
 class LocationOut(BaseModel):
     id: str
@@ -343,6 +429,7 @@ class LocationOut(BaseModel):
     print_on_hold: bool = False
     unhold_in_kitchen: bool = False
     auto_hold_all_courses: bool = False
+    contact_email: Optional[str] = None
     created_at: datetime
     class Config:
         from_attributes = True

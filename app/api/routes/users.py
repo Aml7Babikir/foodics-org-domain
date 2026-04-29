@@ -5,6 +5,7 @@ from app.schemas.users import (
     UserOut, UserInvite, BulkUserInvite,
     RoleCreate, RoleOut,
     RoleAssignmentCreate, RoleAssignmentOut,
+    UserProfileUpdate,
 )
 from app.services import user_service as svc
 
@@ -108,3 +109,51 @@ def get_user_assignments(user_id: str, db: Session = Depends(get_db)):
 def get_accessible_locations(user_id: str, db: Session = Depends(get_db)):
     ids = svc.get_user_accessible_locations(db, user_id)
     return {"location_ids": ids, "count": len(ids)}
+
+
+# --- Account → My Profile self-edit endpoints ---
+
+@router.put("/{user_id}/profile", response_model=UserOut)
+def update_profile(user_id: str, data: UserProfileUpdate, db: Session = Depends(get_db)):
+    """Self-edit endpoint backing the Account → My Profile tab."""
+    user = svc.get_user(db, user_id)
+    if not user:
+        raise HTTPException(status_code=404, detail="User not found")
+    payload = data.dict(exclude_unset=True)
+    for k, v in payload.items():
+        setattr(user, k, v)
+    db.commit()
+    db.refresh(user)
+    return user
+
+
+@router.post("/{user_id}/regenerate-pin")
+def regenerate_pin(user_id: str, db: Session = Depends(get_db)):
+    """Account → My Profile → Generate-PIN button. PIN is hashed and never returned again."""
+    import hashlib, secrets
+    user = svc.get_user(db, user_id)
+    if not user:
+        raise HTTPException(status_code=404, detail="User not found")
+    pin = "".join([str(secrets.randbelow(10)) for _ in range(6)])
+    user.pin_hash = hashlib.sha256(pin.encode()).hexdigest()
+    db.commit()
+    db.refresh(user)
+    # Plain PIN returned ONCE here; the spec says "Login PIN is not shown" so
+    # the UI should only flash this in a one-time toast.
+    return {"user_id": user.id, "pin": pin, "message": "PIN regenerated. Show this once."}
+
+
+@router.post("/{user_id}/change-password")
+def change_password(user_id: str, body: dict, db: Session = Depends(get_db)):
+    """Account → My Profile → Change Password button."""
+    import hashlib
+    new_password = body.get("new_password")
+    if not new_password or len(new_password) < 8:
+        raise HTTPException(status_code=400, detail="Password must be at least 8 characters")
+    user = svc.get_user(db, user_id)
+    if not user:
+        raise HTTPException(status_code=404, detail="User not found")
+    user.password_hash = hashlib.sha256(new_password.encode()).hexdigest()
+    user.email_password_enabled = True
+    db.commit()
+    return {"ok": True}

@@ -380,6 +380,33 @@ class BranchPaymentMethodOverride(BaseModel):
 
 
 # ------------------------------------------------------------------ #
+# Support tickets (Account → Support tab)                            #
+# ------------------------------------------------------------------ #
+
+class SupportTicket(BaseModel):
+    """
+    Support ticket raised by an Account Owner against Foodics support
+    (Account page, Support tab — "My Tickets" section).
+
+    Lifecycle is loosely typed: open → in_progress → resolved → closed.
+    The Foodics-side ticketing system is the system-of-record; this row is
+    just the Console-side projection so the Account page can list and
+    filter the user's tickets.
+    """
+    __tablename__ = "support_tickets"
+
+    name = Column(String(255), nullable=False)                    # subject line
+    organisation_id = Column(String(36), ForeignKey("organisations.id"), nullable=False)
+    body = Column(Text)
+    category = Column(String(60), default="general")              # billing, technical, feature_request, ...
+    priority = Column(String(20), default="normal")               # low, normal, high, urgent
+    state = Column(String(20), default="open")                    # open, in_progress, resolved, closed
+    created_by_user_id = Column(String(36), ForeignKey("users.id"), nullable=True)
+    resolved_at = Column(DateTime, nullable=True)
+    status = Column(String(20), default="active")
+
+
+# ------------------------------------------------------------------ #
 # Settings (8-tab JSON blobs, one row per (organisation, category))  #
 # ------------------------------------------------------------------ #
 

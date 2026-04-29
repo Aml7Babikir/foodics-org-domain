@@ -14,7 +14,7 @@ from app.models.manage import (
     Tag, Reason, KitchenFlow, ReservationSetting, OnlineOrderingChannel,
     PayAtTable, NotificationSetting, OnlinePaymentGateway, DeliveryCharge,
     Section, DiningTable, RevenueCenter, TimedEvent, Course,
-    BranchPaymentMethodOverride,
+    BranchPaymentMethodOverride, SupportTicket,
     OrganisationSettings, SETTINGS_CATEGORIES,
 )
 
@@ -42,6 +42,7 @@ MODEL_REGISTRY = {
     "timed-events": TimedEvent,
     "courses": Course,
     "branch-payment-overrides": BranchPaymentMethodOverride,
+    "support-tickets": SupportTicket,
 }
 
 
@@ -481,6 +482,104 @@ def ensure_org_dummy_data(db: Session, organisation_id: str) -> None:
             ends_at=now + timedelta(days=10),
             is_active=False,
         ))
+
+    db.flush()
+
+
+def ensure_account_dummy_fields(db: Session, organisation_id: str) -> None:
+    """
+    Fill in Account-page default fields on an Organisation if still NULL —
+    business meta + 2FA toggles + account-manager etc. Never overwrites.
+
+    NOTE: As of the latest revamp these fields are no longer surfaced on the
+    Account page — General/Contacts moved to LegalEntity/Brand/Location, and
+    the Settings section moved to the Settings page (Business tab). The Org
+    columns remain populated as a fallback for any code path that still reads
+    them, but the source-of-truth for new edits is now the moved-to entity.
+    """
+    from app.models.hierarchy import Organisation
+    org = db.query(Organisation).filter(Organisation.id == organisation_id).first()
+    if not org:
+        return
+    if not org.business_category:        org.business_category = "Restaurant"
+    if not org.business_subcategory:     org.business_subcategory = "Casual Dining"
+    if not org.country:                  org.country = "Saudi Arabia"
+    if not org.currency:                 org.currency = "SAR"
+    if not org.time_zone:                org.time_zone = "Asia/Riyadh"
+    if not org.account_number:           org.account_number = f"ACC-{org.id[:8].upper()}"
+    if not org.primary_email:            org.primary_email = org.billing_email or "ops@example.com"
+    if not org.owner_email:              org.owner_email = org.billing_email or "owner@example.com"
+    if not org.owner_phone:              org.owner_phone = "+966500000000"
+    if not org.account_manager_name:     org.account_manager_name = "Sarah Al-Mansouri"
+    if not org.account_manager_email:    org.account_manager_email = "sarah.am@foodics.com"
+    if not org.account_package_type:     org.account_package_type = "Foodics RMS Standard"
+    if not org.account_creation_email:   org.account_creation_email = org.billing_email or "owner@example.com"
+    db.flush()
+
+
+def migrate_account_fields_to_le_brand_location(
+    db: Session, organisation_id: str
+) -> None:
+    """
+    Idempotent one-time move of Account-page fields off Organisation onto
+    their new homes (per user revamp instruction):
+
+      Organisation.{account_number, business_category, business_subcategory,
+                    tax_registration_name, tax_number}
+        → primary LegalEntity (first LE for the org)
+
+      Organisation.{owner_phone}         → primary LegalEntity
+      Organisation.{primary_email/owner_email} → first Brand.contact_email
+                                            + first Location.contact_email
+      Organisation.{owner_phone}         → first Brand.contact_phone
+
+    Each target field is only filled when currently NULL — user edits never
+    get clobbered.
+    """
+    from app.models.hierarchy import Organisation, LegalEntity, Brand, Location
+
+    org = db.query(Organisation).filter(Organisation.id == organisation_id).first()
+    if not org:
+        return
+
+    # Primary LE = oldest LE for this org.
+    le = (
+        db.query(LegalEntity)
+        .filter(LegalEntity.organisation_id == organisation_id)
+        .order_by(LegalEntity.created_at.asc())
+        .first()
+    )
+    if le:
+        if not le.account_number:        le.account_number = org.account_number
+        if not le.business_category:     le.business_category = org.business_category
+        if not le.business_subcategory:  le.business_subcategory = org.business_subcategory
+        if not le.tax_registration_name: le.tax_registration_name = org.tax_registration_name
+        if not le.tax_number:            le.tax_number = org.tax_number
+        if not le.owner_phone:           le.owner_phone = org.owner_phone
+        # Existing LE.email stays as-is; populate from primary_email if missing.
+        if not le.email:                 le.email = org.primary_email or org.owner_email
+
+    # Brand contact: backfill the first brand's email/phone from owner_*.
+    brand = (
+        db.query(Brand)
+        .filter(Brand.organisation_id == organisation_id)
+        .order_by(Brand.created_at.asc())
+        .first()
+    )
+    if brand:
+        if not brand.contact_email: brand.contact_email = org.primary_email or org.owner_email
+        if not brand.contact_phone: brand.contact_phone = org.owner_phone
+
+    # Location contact: backfill the first location's email.
+    loc = (
+        db.query(Location)
+        .join(Brand, Location.brand_id == Brand.id)
+        .filter(Brand.organisation_id == organisation_id)
+        .order_by(Location.created_at.asc())
+        .first()
+    )
+    if loc and not loc.contact_email:
+        loc.contact_email = org.primary_email or org.owner_email
 
     db.flush()
 

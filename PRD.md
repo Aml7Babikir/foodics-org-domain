@@ -237,3 +237,72 @@ spec section against its implementation status in this codebase.
 - Notification action enum + non-email channels (§14)
 - Revenue-center scope: per-account vs. fine-dining-only (§11)
 - Charge model: global-then-link vs. branch-direct (§4)
+
+---
+
+## Account Page Spec Coverage
+
+The Account page (sidebar → System → Account) implements the four-tab spec:
+
+| Tab | Section | Status | Notes |
+|-----|---------|--------|-------|
+| **My Profile** | Profile (Name, Phone, Email, Login PIN, Language, Display Localized Names) | Built | `User.language` (en/ar/es/fr), `User.display_localized_names`. PIN regenerated via `POST /users/{id}/regenerate-pin` (returns plaintext once, hashed in storage — spec: "Login PIN is not shown"). |
+| | Change Password button | Built | `POST /users/{id}/change-password`, ≥8 chars enforced. |
+| | Notifications (14 inventory event toggles + Toggle All) | Built | Stored as JSON in `User.notification_preferences`. Event keys mirrored exactly from spec list. |
+| **Business Details** | General (Business Name, Account Number, Categories, Tax/CR/Tax Number, Country, Currency) | Built | All on `Organisation`. Save via `PUT /hierarchy/organisations/{id}`. |
+| | Contacts (Primary Email, Owner Email, Owner Phone) | Built | `primary_email`, `owner_email`, `owner_phone`. |
+| | Settings (Time Zone, Tax Inclusive, Localization, Restrict Purchased Items, Insurance Products, 2FA) | Built | All as Org boolean toggles + `time_zone` string. |
+| **Support** | Account Manager (name + email) | Built | `Organisation.account_manager_name`, `account_manager_email`. |
+| | Grant Support Access button | Built | `POST /hierarchy/organisations/{id}/grant-support-access` with `{hours: N}`. Stored as `support_access_granted_until` timestamp. `hours=0` revokes. |
+| | Send An Email button | Built (link) | Mailto-style link to `support@foodics.com`. Real email-channel handoff is owned by support tooling. |
+| | My Tickets list + filtering | Built | `SupportTicket` entity with subject, body, category (general/billing/technical/feature_request), priority (low/normal/high/urgent), state (open/in_progress/resolved/closed). |
+| **Licenses & Invoices** | Informational banner ("not real-time") | Built | Static UI banner. |
+| | General Information (Package Type, Creation Date, Creation Email) | Built | `account_package_type`, `account_creation_email`, `created_at` from Organisation. |
+| | Licenses Overview (RMS, Add-Ons, Foodics Online, Foodics One, Foodics Pay) | Stub | Renders the 5 product-line rows as "No data to display" with link to `/merchant`. The merchant portal (`foodics_subscription_shared`) is the system-of-record for live license counts; wiring this Console tab to those endpoints is intentionally deferred until the squad confirms ownership. |
+| | Invoices section + Pay / Upload Document | Stub | Same: links out to `/merchant`. |
+
+**Endpoints added for the Account page:**
+- `PUT  /api/v1/users/{id}/profile` — self-edit My Profile fields
+- `POST /api/v1/users/{id}/regenerate-pin` — generate + return new login PIN once
+- `POST /api/v1/users/{id}/change-password` — set Console password
+- `POST /api/v1/hierarchy/organisations/{id}/grant-support-access` — toggle Foodics support access
+- `*    /api/v1/manage/support-tickets/...` — full CRUD on tickets
+
+**Defaults seeded per Organisation** (idempotent on every boot, never overwrites):
+- `business_category=Restaurant`, `business_subcategory=Casual Dining`
+- `country=Saudi Arabia`, `currency=SAR`, `time_zone=Asia/Riyadh`
+- `account_number=ACC-<8-char-prefix>`
+- `account_manager_name=Sarah Al-Mansouri`, `account_manager_email=sarah.am@foodics.com`
+- `account_package_type=Foodics RMS Standard`
+
+---
+
+## Account Page Revamp (post-spec consolidation)
+
+After the initial Account page build, the squad consolidated the surface so
+nothing lived alone in "Account" — every field moved to the entity that
+actually owns it. The Account page is now removed from the sidebar.
+
+| Original section | New home | Storage |
+|------------------|----------|---------|
+| **My Profile → Notifications** (14 inventory event toggles + Toggle All) | Settings → **Notifications** tab | `User.notification_preferences` JSON, scoped to the logged-in user |
+| **Business Details → General** (Account Number, Business Category/Subcategory, Tax Registration Name, Commercial Registration, Tax Number, Country, Currency) | LegalEntity (visible on the LE detail/edit page) | New columns on `legal_entities`: `account_number`, `business_category`, `business_subcategory`, `tax_registration_name`, `tax_number`. (`commercial_registration`, `country_id`, `currency_code` were already there.) |
+| **Business Details → Contacts** (Primary Email, Owner Email, Owner Phone) | LegalEntity + Brand + Location (each gets its own contact fields) | LE: existing `email` + new `owner_phone`. Brand: new `contact_email`, `contact_phone`. Location: new `contact_email` (`phone` already existed). |
+| **Business Details → Settings** (Time Zone, Tax Inclusive, Localization, Restrict Purchased Items, Insurance Products, 2FA) | Settings → **Business** tab | Direct columns on `Organisation` — saved via the existing `PUT /hierarchy/organisations/{id}` endpoint when the Business tab is saved. |
+| **My Profile → Profile** (Name, Phone, Email, PIN, Language, Display Localized Names, Change Password) | Removed from UI | Endpoints (`/users/{id}/profile`, `regenerate-pin`, `change-password`) remain in place but unsurfaced. |
+| **Support tab** (Account Manager, Grant Support Access, Send Email, My Tickets) | Removed from UI | Endpoint (`grant-support-access`) and `SupportTicket` entity remain in place but unsurfaced. |
+| **Licenses & Invoices tab** | Removed from UI | Subscription/Invoice data lives in `foodics_subscription_shared` — accessed via the merchant portal. |
+
+**One-time data move on boot** (idempotent — only fills NULLs):
+`migrate_account_fields_to_le_brand_location()` copies the previously-on-Org
+account values to the org's primary LegalEntity (and contact fallbacks to the
+first Brand and Location). Existing user-level edits on those entities are
+never overwritten.
+
+**Settings page tab order** (after revamp):
+1. Business · 2. Notifications · 3. Receipt · 4. Call Center · 5. Cashier App · 6. Display App · 7. Kitchen · 8. Payment Integrations · 9. SMS Providers · 10. Inventory Transactions
+
+The first two tabs are the moved-here Account sections; tabs 3–10 are the
+spec's original 8 JSON-blob category tabs. The Device Management cards row
+(Devices / Kitchen Flows / Notification Rules) above the tab strip is
+unchanged.

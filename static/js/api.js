@@ -121,7 +121,39 @@ const api = {
         api.put(`/manage/organisations/${orgId}/settings/${category}`, {
             organisation_id: orgId, category, settings,
         }),
+
+    // ── Account page ──
+    updateProfile:        (userId, data)        => api.put(`/users/${userId}/profile`, data),
+    regeneratePin:        (userId)              => api.post(`/users/${userId}/regenerate-pin`),
+    changePassword:       (userId, newPassword) => api.post(`/users/${userId}/change-password`, { new_password: newPassword }),
+    grantSupportAccess:   (orgId, hours)        => api.post(`/hierarchy/organisations/${orgId}/grant-support-access`, { hours }),
 };
+
+// Account → My Profile inventory notification events (Spec — 14 events).
+const INVENTORY_NOTIFICATION_EVENTS = [
+    { key: 'cost_adjustment_submitted',     label: 'User submits a cost adjustment transaction' },
+    { key: 'inventory_count_submitted',     label: 'User submits an inventory count transaction' },
+    { key: 'purchasing_submitted',          label: 'User submits a purchasing transaction' },
+    { key: 'quantity_adjustment_submitted', label: 'User submits a quantity adjustment transaction' },
+    { key: 'supplier_return',               label: 'User returns items to a supplier' },
+    { key: 'transfer_received',             label: 'User receives inventory items from a transfer' },
+    { key: 'production_submitted',          label: 'User submits a production transaction' },
+    { key: 'sent_inventory',                label: 'User sends inventory from a warehouse/branch' },
+    { key: 'item_unavailable',              label: 'Inventory item not available anymore' },
+    { key: 'purchase_order_needs_approval', label: 'User submits a purchase order needing approval' },
+    { key: 'item_max_quantity',             label: 'Inventory item reaches max quantity' },
+    { key: 'item_min_quantity',             label: 'Inventory item reaches min quantity' },
+    { key: 'transfer_order_review',         label: 'User submits a transfer order for review' },
+    { key: 'transfer_waiting_receipt',      label: 'Transfer transaction waiting to be received' },
+];
+
+// Languages available in My Profile (Spec — Account → My Profile).
+const ACCOUNT_LANGUAGES = [
+    { code: 'en', label: 'English' },
+    { code: 'ar', label: 'العربية' },
+    { code: 'es', label: 'Español' },
+    { code: 'fr', label: 'Français' },
+];
 
 // Manage entity registry — single source of truth for the Manage UI.
 // `key` matches the backend route segment, `singular` is used in modal titles.
@@ -316,14 +348,22 @@ const MANAGE_ENTITIES = {
     },
 };
 
-// Settings tabs (Manage → More → Settings) — stable order matching the doc.
+// Settings tabs. The first two tabs are special:
+//   - 'business'      → saves directly to Organisation columns (moved from
+//                       Account → Business Details → Settings section).
+//   - 'notifications' → saves the 14 inventory event toggles to the current
+//                       user's notification_preferences (moved from Account
+//                       → My Profile → Notifications).
+// Remaining 8 tabs are the doc's JSON-blob category tabs.
 const SETTINGS_TABS = [
-    { key: 'receipt',                label: 'Receipt' },
-    { key: 'call_center',            label: 'Call Center' },
-    { key: 'cashier_app',            label: 'Cashier App' },
-    { key: 'display_app',            label: 'Display App' },
-    { key: 'kitchen',                label: 'Kitchen' },
-    { key: 'payment_integrations',   label: 'Payment Integrations' },
-    { key: 'sms_providers',          label: 'SMS Providers' },
-    { key: 'inventory_transactions', label: 'Inventory Transactions' },
+    { key: 'business',               label: 'Business',                kind: 'org-fields' },
+    { key: 'notifications',          label: 'Notifications',           kind: 'user-prefs' },
+    { key: 'receipt',                label: 'Receipt',                 kind: 'blob' },
+    { key: 'call_center',            label: 'Call Center',             kind: 'blob' },
+    { key: 'cashier_app',            label: 'Cashier App',             kind: 'blob' },
+    { key: 'display_app',            label: 'Display App',             kind: 'blob' },
+    { key: 'kitchen',                label: 'Kitchen',                 kind: 'blob' },
+    { key: 'payment_integrations',   label: 'Payment Integrations',    kind: 'blob' },
+    { key: 'sms_providers',          label: 'SMS Providers',           kind: 'blob' },
+    { key: 'inventory_transactions', label: 'Inventory Transactions',  kind: 'blob' },
 ];

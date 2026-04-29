@@ -13,7 +13,7 @@ Key rules:
   - Franchise = different owners (Legal Entities) under the same Brand
   - Legal Entity must belong to exactly one Country
 """
-from sqlalchemy import Column, String, ForeignKey, Boolean, Integer, Text, Table
+from sqlalchemy import Column, String, ForeignKey, Boolean, Integer, Text, Table, DateTime
 from sqlalchemy.orm import relationship
 from app.models.base import BaseModel, Base
 
@@ -36,6 +36,39 @@ class Organisation(BaseModel):
     sso_enabled = Column(Boolean, default=False)
     data_residency_region = Column(String(50))
     status = Column(String(20), default="active")  # active, suspended
+
+    # ── Account → Business Details (General) ──────────────────────── #
+    account_number = Column(String(50))
+    business_category = Column(String(80))                         # e.g. Restaurant, Cafe, QSR
+    business_subcategory = Column(String(80))                      # e.g. Fine Dining, Coffee Shop
+    tax_registration_name = Column(String(255))
+    commercial_registration = Column(String(100))
+    tax_number = Column(String(100))
+    country = Column(String(100))                                  # display country at account level
+    currency = Column(String(3))                                   # display currency at account level
+
+    # ── Account → Business Details (Contacts) ─────────────────────── #
+    primary_email = Column(String(255))                            # mirror of billing_email when set explicitly
+    owner_email = Column(String(255))
+    owner_phone = Column(String(50))
+
+    # ── Account → Business Details (Settings) ─────────────────────── #
+    time_zone = Column(String(60), default="Asia/Riyadh")
+    tax_inclusive_pricing = Column(Boolean, default=True)          # mirrors Org-level tax_mode default
+    enable_localization = Column(Boolean, default=False)
+    restrict_purchased_items_to_supplier = Column(Boolean, default=False)
+    enable_insurance_products = Column(Boolean, default=False)     # non-revenue insurance items
+    two_factor_enabled = Column(Boolean, default=False)            # Google Authenticator
+
+    # ── Account → Support tab ─────────────────────────────────────── #
+    account_manager_name = Column(String(255))
+    account_manager_email = Column(String(255))
+    support_access_granted_until = Column(DateTime, nullable=True) # null = not granted
+
+    # ── Account → Licenses & Invoices tab ─────────────────────────── #
+    account_package_type = Column(String(80))                      # e.g. "Foodics RMS Standard"
+    account_creation_email = Column(String(255))                   # who created the account
+    # account_creation_date = self.created_at  (already inherited from BaseModel)
 
     # Relationships
     groups = relationship("Group", back_populates="organisation", cascade="all, delete-orphan")
@@ -70,6 +103,9 @@ class Brand(BaseModel):
     receipt_header = Column(Text)        # Per-brand receipt header (Spec §2.1)
     receipt_footer = Column(Text)        # Per-brand receipt footer (Spec §2.1)
     loyalty_programme_enabled = Column(Boolean, default=False)
+    # Contacts (Account → Business Details Contacts moved here)
+    contact_email = Column(String(255))
+    contact_phone = Column(String(50))
     status = Column(String(20), default="active")
 
     organisation = relationship("Organisation", back_populates="brands")
@@ -131,8 +167,16 @@ class LegalEntity(BaseModel):
     tax_mode = Column(String(20), default="inclusive")  # inclusive, exclusive
     zatca_enabled = Column(Boolean, default=False)
 
-    # Contact
+    # Contact (Account → Business Details Contacts moved here)
     email = Column(String(255), nullable=True)
+    owner_phone = Column(String(50), nullable=True)
+
+    # General company-profile fields (Account → Business Details General moved here)
+    account_number = Column(String(50), nullable=True)
+    business_category = Column(String(80), nullable=True)
+    business_subcategory = Column(String(80), nullable=True)
+    tax_registration_name = Column(String(255), nullable=True)
+    tax_number = Column(String(100), nullable=True)
 
     # Franchise ownership: who owns/operates this legal entity
     owner_name = Column(String(255), nullable=True)  # e.g. "Al-Nakheel F&B LLC" (the franchisee)
@@ -231,6 +275,10 @@ class Location(BaseModel):
     print_on_hold = Column(Boolean, default=False)        # Course-mgmt sub-config
     unhold_in_kitchen = Column(Boolean, default=False)
     auto_hold_all_courses = Column(Boolean, default=False)
+
+    # Contact (Account → Business Details Contacts moved here)
+    # Phone already exists above; just adding contact_email at branch level.
+    contact_email = Column(String(255), nullable=True)
 
     legal_entity = relationship("LegalEntity", back_populates="locations")
     brand = relationship("Brand")

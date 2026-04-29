@@ -52,6 +52,26 @@ def get_hierarchy_tree(org_id: str, db: Session = Depends(get_db)):
     return tree
 
 
+@router.post("/organisations/{org_id}/grant-support-access", response_model=OrganisationOut)
+def grant_support_access(org_id: str, body: dict = None, db: Session = Depends(get_db)):
+    """
+    Account → Support tab → "Grant Support Access" button.
+    Body: {"hours": <int>} (default 24). Setting hours=0 revokes access.
+    """
+    from datetime import datetime, timedelta
+    org = svc.get_organisation(db, org_id)
+    if not org:
+        raise HTTPException(status_code=404, detail="Organisation not found")
+    hours = (body or {}).get("hours", 24)
+    if hours <= 0:
+        org.support_access_granted_until = None
+    else:
+        org.support_access_granted_until = datetime.utcnow() + timedelta(hours=hours)
+    db.commit()
+    db.refresh(org)
+    return org
+
+
 # --- Group ---
 @router.post("/groups", response_model=GroupOut, status_code=201)
 def create_group(data: GroupCreate, db: Session = Depends(get_db)):

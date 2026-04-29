@@ -653,6 +653,40 @@ class BranchPaymentOverrideOut(BaseModel):
         from_attributes = True
 
 
+# ───── SupportTicket ─────
+class SupportTicketCreate(BaseModel):
+    name: str                        # subject
+    organisation_id: str
+    body: Optional[str] = None
+    category: str = "general"
+    priority: str = "normal"
+    created_by_user_id: Optional[str] = None
+
+class SupportTicketUpdate(BaseModel):
+    name: Optional[str] = None
+    body: Optional[str] = None
+    category: Optional[str] = None
+    priority: Optional[str] = None
+    state: Optional[str] = None
+    resolved_at: Optional[datetime] = None
+    status: Optional[str] = None
+
+class SupportTicketOut(BaseModel):
+    id: str
+    name: str
+    organisation_id: str
+    body: Optional[str]
+    category: str
+    priority: str
+    state: str
+    created_by_user_id: Optional[str]
+    resolved_at: Optional[datetime]
+    status: str
+    created_at: datetime
+    class Config:
+        from_attributes = True
+
+
 # ───── OrganisationSettings (8-tab JSON blob) ─────
 class OrganisationSettingsUpsert(BaseModel):
     organisation_id: str

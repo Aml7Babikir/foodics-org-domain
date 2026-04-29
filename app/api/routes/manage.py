@@ -35,6 +35,7 @@ from app.schemas.manage import (
     TimedEventCreate, TimedEventUpdate, TimedEventOut,
     CourseCreate, CourseUpdate, CourseOut,
     BranchPaymentOverrideCreate, BranchPaymentOverrideUpdate, BranchPaymentOverrideOut,
+    SupportTicketCreate, SupportTicketUpdate, SupportTicketOut,
     OrganisationSettingsUpsert, OrganisationSettingsOut,
 )
 from app.models.manage import SETTINGS_CATEGORIES
@@ -130,6 +131,8 @@ _register_crud("revenue-centers", RevenueCenterCreate, RevenueCenterUpdate, Reve
 _register_crud("timed-events", TimedEventCreate, TimedEventUpdate, TimedEventOut)
 _register_crud("courses", CourseCreate, CourseUpdate, CourseOut)
 _register_crud("branch-payment-overrides", BranchPaymentOverrideCreate, BranchPaymentOverrideUpdate, BranchPaymentOverrideOut)
+# Account → Support tab:
+_register_crud("support-tickets", SupportTicketCreate, SupportTicketUpdate, SupportTicketOut)
 
 
 # ── Settings (8-tab JSON-blob per category) ──────────────────────── #

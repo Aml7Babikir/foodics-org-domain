@@ -26,9 +26,23 @@ class UserOut(BaseModel):
     email_verified_at: Optional[datetime] = None
     tag_ids: Optional[str] = None
     notification_preferences: Optional[dict] = None
+    # Account → My Profile fields:
+    language: Optional[str] = "en"
+    display_localized_names: Optional[bool] = False
     created_at: datetime
     class Config:
         from_attributes = True
+
+
+class UserProfileUpdate(BaseModel):
+    """Account page → My Profile tab self-edit payload."""
+    name: Optional[str] = None
+    email: Optional[str] = None
+    mobile_number: Optional[str] = None
+    language: Optional[str] = None
+    display_localized_names: Optional[bool] = None
+    notification_preferences: Optional[dict] = None
+    # Login PIN regeneration uses a separate endpoint (so it can hash safely).
 
 
 class UserInvite(BaseModel):

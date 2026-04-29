@@ -56,6 +56,8 @@ function getPageTitle(page) {
         'revenue-centers': 'Revenue Centers',
         'timed-events': 'Timed Events',
         courses: 'Courses',
+        account: 'Account',
+        'support-tickets': 'Support Tickets',
     };
     return titles[page] || page;
 }

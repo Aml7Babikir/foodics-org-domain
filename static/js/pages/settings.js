@@ -4,6 +4,16 @@
 // /manage/organisations/{org}/settings/{category} endpoint as a JSON blob.
 
 const SETTINGS_FIELDS = {
+    // Business — moved here from Account → Business Details → Settings.
+    // Stored directly on the Organisation row (not a JSON blob).
+    business: [
+        { name: 'time_zone',                            label: 'Time Zone',                                 type: 'text',     placeholder: 'Asia/Riyadh' },
+        { name: 'tax_inclusive_pricing',                label: 'Tax Inclusive Pricing',                     type: 'checkbox', default: true },
+        { name: 'enable_localization',                  label: 'Enable Localization',                       type: 'checkbox' },
+        { name: 'restrict_purchased_items_to_supplier', label: 'Restrict Purchased Items To Supplier',      type: 'checkbox' },
+        { name: 'enable_insurance_products',            label: 'Enable Insurance Products (Non-Revenue)',   type: 'checkbox' },
+        { name: 'two_factor_enabled',                   label: 'Two-Factor Authentication (Google Auth.)',  type: 'checkbox' },
+    ],
     receipt: [
         { name: 'logo_url',          label: 'Logo URL',         type: 'text' },
         { name: 'print_language',    label: 'Print Language',   type: 'select', options: ['main','localized','both'], default: 'main' },
@@ -90,18 +100,76 @@ const SETTINGS_FIELDS = {
         return el.value;
     }
 
-    let activeTab = 'receipt';
+    let activeTab = 'business';
+
+    async function loadStoredForTab(tab) {
+        // Returns the {fieldName: value} dict for the tab's current values.
+        if (tab.kind === 'org-fields') {
+            const org = await api.getOrg(state.currentOrg.id);
+            return org;
+        }
+        if (tab.kind === 'user-prefs') {
+            const users = await api.listUsers(state.currentOrg.id);
+            const me = users[0];
+            return { _user: me, ...(me && me.notification_preferences ? me.notification_preferences : {}) };
+        }
+        // blob
+        try {
+            const res = await api.getOrgSettings(state.currentOrg.id, tab.key);
+            return res.settings || {};
+        } catch (e) { return {}; }
+    }
+
+    function renderNotificationsTab(container, tabKey, stored) {
+        const me = stored._user;
+        if (!me) {
+            container.innerHTML = '<div class="empty-state"><p>No users in this organisation.</p></div>';
+            return;
+        }
+        container.innerHTML = `
+            <div class="card">
+                <div class="card-header">
+                    <h3>Notifications — ${me.name}</h3>
+                    <div style="display:flex;align-items:center;gap:16px;">
+                        <label style="display:inline-flex;align-items:center;gap:8px;">
+                            <input type="checkbox" id="set_toggle_all" onclick="window._settingsToggleAll(this.checked)">
+                            <span class="text-sm">Toggle All</span>
+                        </label>
+                        <button class="btn btn-primary btn-sm" onclick="window._settingsSaveNotifPrefs('${me.id}')">Save Changes</button>
+                    </div>
+                </div>
+                <div class="card-body">
+                    <p class="text-sm text-muted" style="margin-bottom:12px;">Subscribe to inventory event alerts. Notifications are sent via email.</p>
+                    <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;">
+                        ${INVENTORY_NOTIFICATION_EVENTS.map(ev => `
+                            <label style="display:flex;align-items:center;gap:8px;padding:6px;border-radius:6px;">
+                                <input type="checkbox" data-pref="${ev.key}" ${stored[ev.key] ? 'checked' : ''}>
+                                <span class="text-sm">${ev.label}</span>
+                            </label>
+                        `).join('')}
+                    </div>
+                </div>
+            </div>
+        `;
+
+        window._settingsToggleAll = (checked) => {
+            document.querySelectorAll('[data-pref]').forEach(el => { el.checked = checked; });
+        };
+        window._settingsSaveNotifPrefs = async (userId) => {
+            const prefs = {};
+            document.querySelectorAll('[data-pref]').forEach(el => { prefs[el.dataset.pref] = el.checked; });
+            try {
+                await api.updateProfile(userId, { notification_preferences: prefs });
+                toast('Notification preferences saved');
+            } catch (e) { toast(e.message, 'error'); }
+        };
+    }
 
     async function renderTab(container, tabKey) {
         activeTab = tabKey;
         const tab = SETTINGS_TABS.find(t => t.key === tabKey);
         const fields = SETTINGS_FIELDS[tabKey] || [];
-
-        let stored = {};
-        try {
-            const res = await api.getOrgSettings(state.currentOrg.id, tabKey);
-            stored = res.settings || {};
-        } catch (e) { /* empty defaults */ }
+        const stored = await loadStoredForTab(tab);
 
         const tabBar = SETTINGS_TABS.map(t => `
             <button class="settings-tab ${t.key === tabKey ? 'active' : ''}"
@@ -112,7 +180,7 @@ const SETTINGS_FIELDS = {
         container.innerHTML = `
             <div style="margin-bottom:16px;">
                 <h3 style="margin:0;">Settings</h3>
-                <p class="text-sm text-muted" style="margin-top:4px;">Configure how the POS, kitchen, customer display, and back-office behave.</p>
+                <p class="text-sm text-muted" style="margin-top:4px;">Business profile, notifications, and POS / kitchen / back-office behaviour.</p>
             </div>
 
             <div class="nav-section-title" style="margin:0 0 8px;">Device Management</div>
@@ -131,8 +199,8 @@ const SETTINGS_FIELDS = {
                 </div>
                 <div class="card" style="cursor:pointer;" onclick="navigate('notifications')">
                     <div class="card-body">
-                        <div style="font-weight:600;">Notifications</div>
-                        <div class="text-sm text-muted" style="margin-top:4px;">Order, stock and system alerts</div>
+                        <div style="font-weight:600;">Notification Rules</div>
+                        <div class="text-sm text-muted" style="margin-top:4px;">Org-wide email alerts (Spec §14)</div>
                     </div>
                 </div>
             </div>
@@ -140,6 +208,17 @@ const SETTINGS_FIELDS = {
             <div class="nav-section-title" style="margin:0 0 8px;">Configuration</div>
             <div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:20px;">${tabBar}</div>
 
+            <div id="settingsTabBody"></div>
+        `;
+
+        const body = document.getElementById('settingsTabBody');
+        if (tab.kind === 'user-prefs') {
+            renderNotificationsTab(body, tabKey, stored);
+            return;
+        }
+
+        // Both 'org-fields' and 'blob' use the same field-rendering form.
+        body.innerHTML = `
             <div class="card">
                 <div class="card-header">
                     <h3>${tab.label}</h3>
@@ -164,14 +243,19 @@ const SETTINGS_FIELDS = {
     };
 
     window._settingsSave = async (tabKey) => {
+        const tab = SETTINGS_TABS.find(t => t.key === tabKey);
         const fields = SETTINGS_FIELDS[tabKey] || [];
-        const settings = {};
+        const data = {};
         for (const f of fields) {
             const v = readInput(f);
-            if (v !== undefined) settings[f.name] = v;
+            if (v !== undefined) data[f.name] = v;
         }
         try {
-            await api.saveOrgSettings(state.currentOrg.id, tabKey, settings);
+            if (tab.kind === 'org-fields') {
+                await api.updateOrg(state.currentOrg.id, data);
+            } else {
+                await api.saveOrgSettings(state.currentOrg.id, tabKey, data);
+            }
             toast('Settings saved');
         } catch (e) {
             toast(e.message, 'error');
