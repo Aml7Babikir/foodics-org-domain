@@ -1,0 +1,98 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Franchisee — Business Hierarchy Wireframe</title>
+<link rel="stylesheet" href="style.css">
+<style>
+  .note { background: #eef2ff; border: 1px solid #d6deff; color: #2c3a8c; border-radius: 6px; padding: 10px 14px; font-size: 13px; margin-bottom: 16px; }
+  .highlight { background: #fff7e6; border: 1px solid #ffd980; color: #6b4a00; border-radius: 8px; padding: 14px 16px; font-size: 14px; margin-bottom: 20px; }
+  .highlight strong { color: #8a4b00; }
+  .models { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-bottom: 24px; }
+  .model-card { background: #fff; border: 1px solid #e3e6eb; border-radius: 8px; padding: 18px; }
+  .model-card h4 { font-size: 15px; margin-bottom: 6px; }
+  .model-card .pill { display: inline-block; font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: .04em; border-radius: 4px; padding: 3px 8px; margin-bottom: 10px; }
+  .model-card.a { border-top: 4px solid #3a6df0; }
+  .model-card.b { border-top: 4px solid #2baf6a; }
+  .model-card.a .pill { background: #eef2ff; color: #3a52d8; }
+  .model-card.b .pill { background: #e7f7ee; color: #1d8a52; }
+  .model-card p { font-size: 13px; color: #4b5563; line-height: 1.5; margin-bottom: 10px; }
+  .renewal { font-size: 13px; background: #f6f8fa; border-radius: 6px; padding: 8px 10px; }
+  .renewal b { color: #1f2430; }
+  .toggle { display: inline-block; background: #eef0f3; color: #6b7280; border-radius: 4px; padding: 2px 8px; font-size: 12px; }
+</style>
+</head>
+<body>
+<div class="layout">
+  <nav class="sidebar">
+      <h1>Business Hierarchy<br><span class="badge">Organisation Service</span></h1>
+      <a href="organisation.html">Organisation</a>
+      <a href="brand.html">Brand</a>
+      <a href="franchisee.html" class="active">Franchisee</a>
+      <a href="legal-entity.html">Legal Entity</a>
+      <a href="branch.html">Branch / Location</a>
+      <div class="nav-group">Lookups</div>
+      <a href="country.html">Country</a>
+      <a href="business-unit.html">Business Unit</a>
+      <a href="business-category.html">Business Category</a>
+      <a href="currency.html">Currency</a>
+    </nav>
+  <main class="main">
+
+    <h2>Franchisee</h2>
+    <p class="subtitle">Created on demand. <strong>Whether and how a Franchisee is created depends on the merchant's franchise business model.</strong> The create-form fields are the same in all cases.</p>
+
+    <div class="highlight">
+      ⚠️ <strong>Franchisee creation depends on the business model.</strong> Foodics supports <strong>two franchise models</strong>, and they differ in <strong>who owns the licence renewal</strong>. Pick the model that matches the merchant before creating Franchisees.
+    </div>
+
+    <div class="models">
+      <div class="model-card a">
+        <span class="pill">Model A — Franchisor-owned</span>
+        <h4>Franchisor owns the account &amp; distributes licences</h4>
+        <p>The franchisor (the <strong>brand owner</strong>) owns the Foodics account and <strong>distributes licences</strong> to its franchisees from within that account.</p>
+        <div class="renewal">🔁 Renewal ownership: <b>Franchisor</b> — the brand owner is responsible for renewing those licences.</div>
+      </div>
+      <div class="model-card b">
+        <span class="pill">Model B — Franchisee-owned (merged)</span>
+        <h4>Franchisee buys Foodics &amp; merges into the main account</h4>
+        <p>The franchisor asks the <strong>franchisee to buy Foodics</strong> and <strong>merge their account</strong> into the franchisor's main account.</p>
+        <div class="renewal">🔁 Renewal ownership: <b>Franchisee</b> — each franchisee is responsible for renewing its own licences.</div>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="toolbar">
+        <h3>Franchisee list</h3>
+        <a class="btn" href="#new-franchisee">+ Add Franchisee</a>
+      </div>
+      <table>
+        <thead><tr><th>Name</th><th>Brand</th><th>Legal Entity</th><th>Model</th><th>Renewal Owner</th><th>Status</th></tr></thead>
+        <tbody>
+          <tr><td>Al Rajhi Franchise Group</td><td>Burger Lab</td><td>Al Rajhi Hospitality Trading Co.</td><td>A — Franchisor-owned</td><td>Franchisor</td><td>Active</td></tr>
+          <tr><td>Gulf Taste Partners</td><td>Pasta Bros</td><td>Gulf Taste F&B LLC</td><td>B — Franchisee-owned</td><td>Franchisee</td><td>Active</td></tr>
+          <tr><td>Levant Foods Franchise</td><td>Burger Lab</td><td>Levant Foods Group</td><td>B — Franchisee-owned</td><td>Franchisee</td><td>Pending</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="card" id="new-franchisee">
+      <h3>New Franchisee <span class="toggle">same fields in both models</span></h3>
+      <p class="subtitle" style="margin-bottom:16px;">Owner User is <strong>inherited from the selected Legal Entity</strong> (not entered here). Contract is an optional document.</p>
+      <div class="form-grid">
+        <div class="field span-2"><label>Name <span class="tag required">required</span> <span class="hint">(string)</span></label><input type='text' placeholder=''></div>
+        <div class="field"><label>Legal Entity Name <span class="tag required">required</span></label><select><option>Al Rajhi Hospitality Trading Co.</option><option>Gulf Taste F&amp;B LLC</option><option>Levant Foods Group</option><option>Burger Lab Trading Co.</option><option>Acme F&amp;B LLC</option></select></div>
+        <div class="field"><label>Brand <span class="tag required">required</span></label><select><option>Burger Lab</option><option>Pasta Bros</option></select></div>
+        <div class="field span-2"><label>Owner User <span class="hint">(inherited from the Legal Entity — read-only)</span></label><input type='text' value='founder@burgerlab.com — Sara Al-Otaibi' disabled></div>
+        <div class="field span-2"><label>Contract <span class="hint">(optional, document upload)</span> <span class="tag optional">optional</span></label><input type='file'></div>
+      </div>
+      <br>
+      <a class="btn" href="#">Save</a>
+      <a class="btn secondary" href="#">Cancel</a>
+    </div>
+
+  </main>
+</div>
+</body>
+</html>

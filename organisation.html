@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Organisation — Business Hierarchy Wireframe</title>
+<link rel="stylesheet" href="style.css">
+<style>
+  .note { background: #eef2ff; border: 1px solid #d6deff; color: #2c3a8c; border-radius: 6px; padding: 10px 14px; font-size: 13px; margin-bottom: 16px; }
+  .toggle { display: inline-block; background: #eef0f3; color: #6b7280; border-radius: 4px; padding: 2px 8px; font-size: 12px; }
+</style>
+</head>
+<body>
+<div class="layout">
+  <nav class="sidebar">
+      <h1>Business Hierarchy<br><span class="badge">Organisation Service</span></h1>
+      <a href="organisation.html" class="active">Organisation</a>
+      <a href="brand.html">Brand</a>
+      <a href="franchisee.html">Franchisee</a>
+      <a href="legal-entity.html">Legal Entity</a>
+      <a href="branch.html">Branch / Location</a>
+      <div class="nav-group">Lookups</div>
+      <a href="country.html">Country</a>
+      <a href="business-unit.html">Business Unit</a>
+      <a href="business-category.html">Business Category</a>
+      <a href="currency.html">Currency</a>
+    </nav>
+  <main class="main">
+    
+    <h2>Organisation</h2>
+    <p class="subtitle">The <strong>seed of the account</strong> — the top-level root of the whole hierarchy. It is the <strong>business reference / ID in the RMS</strong>, and the <strong>concept</strong> on the online side.</p>
+
+    <div class="note">
+      <strong>Exactly one Organisation per account.</strong> The Organisation is the account itself, so it is <strong>not added or listed</strong> — it is <strong>auto-provisioned once</strong> when the account is created via <strong>self-signup</strong>, <strong>Salesforce (SF)</strong>, or <strong>any integrated tool</strong>. There is no "add"; only <strong>view &amp; edit</strong> of the single record.
+    </div>
+
+    <div class="card">
+      <div class="toolbar">
+        <h3>Organisation <span class="toggle">singleton — one per account</span></h3>
+      </div>
+      <table>
+        <tbody>
+          <tr><th style="width:200px">ID <span class="hint">(auto-generated)</span></th><td>ORG-000001</td></tr>
+          <tr><th>Organisation Name</th><td>Foodics HQ</td></tr>
+          <tr><th>Owner Users</th><td>founder@foodics.com — Sara Al-Otaibi</td></tr>
+          <tr><th>Created via</th><td>Salesforce</td></tr>
+          <tr><th>Created</th><td>2024-01-10</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="card" id="edit-organisation">
+      <h3>Edit Organisation <span class="toggle">no create — provisioned with the account</span></h3>
+      <div class="form-grid">
+        <div class="field span-2"><label>ID <span class="hint">(mandatory, auto-generated — read-only)</span></label><input type='text' value='ORG-000001' disabled></div>
+        <div class="field span-2"><label>Organisation Name <span class="tag required">required</span></label><input type='text' value='Foodics HQ'></div>
+        <div class="field span-2"><label>Owner User <span class="hint">(select one or more from existing users)</span> <span class="tag required">required</span></label><select multiple size="4"><option selected>founder@foodics.com — Sara Al-Otaibi</option><option>ceo@acme.com — Khaled Mansour</option><option>ops@acme.com — Layla Hassan</option><option>finance@foodics.com — Omar Nasser</option><option>admin@foodics.com — Huda Salem</option></select></div>
+      </div>
+      <br>
+      <a class="btn" href="#">Save</a>
+      <a class="btn secondary" href="#">Cancel</a>
+    </div>
+    
+  </main>
+</div>
+</body>
+</html>

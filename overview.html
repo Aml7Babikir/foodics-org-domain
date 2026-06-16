@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Overview — Business Hierarchy Wireframe</title>
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+<div class="layout">
+  <nav class="sidebar">
+      <h1>Business Hierarchy<br><span class="badge">Organisation Service</span></h1>
+      <a href="organisation.html">Organisation</a>
+      <a href="brand.html">Brand</a>
+      <a href="franchisee.html">Franchisee</a>
+      <a href="legal-entity.html">Legal Entity</a>
+      <a href="branch.html">Branch / Location</a>
+      <div class="nav-group">Lookups</div>
+      <a href="country.html">Country</a>
+      <a href="business-unit.html">Business Unit</a>
+      <a href="business-category.html">Business Category</a>
+      <a href="currency.html">Currency</a>
+    </nav>
+  <main class="main">
+    
+<h2>Business Hierarchy — Overview</h2>
+<p class="subtitle">Eight levels replace today's flat branch list. Bold levels are always required; the rest auto-create as invisible defaults and activate as a merchant grows.</p>
+<div class="card">
+  <h3>Hierarchy tree (sample)</h3>
+  <div class="tree">
+    <div><span class="lvl l0">0 · Organisation</span> Foodics HQ <span class="tag required">required</span></div>
+    <div class="indent-1"><span class="lvl l1">1 · Group</span> Default Group <span class="auto">auto-created, hidden until needed</span></div>
+    <div class="indent-2"><span class="lvl l2">2 · Brand</span> Burger Lab <span class="tag required">required</span></div>
+    <div class="indent-3"><span class="lvl l3">3 · Country</span> Saudi Arabia <span class="auto">auto-created from address</span></div>
+    <div class="indent-4"><span class="lvl l4">4 · Legal Entity</span> Burger Lab Trading Co. <span class="auto">auto-created, editable later</span></div>
+    <div class="indent-5"><span class="lvl l5">5 · Business Unit</span> Default Business Unit <span class="auto">auto-created, hidden until needed</span></div>
+    <div class="indent-6"><span class="lvl l6">6 · Location Group</span> Riyadh Cluster <span class="auto">auto-created, hidden until needed</span></div>
+    <div class="indent-7"><span class="lvl l7">7 · Branch / Location</span> Olaya Street Branch <span class="tag required">required</span></div>
+  </div>
+</div>
+<div class="card">
+  <h3>Entities in this wireframe</h3>
+  <table>
+    <thead><tr><th>Entity</th><th>Level</th><th>Key fields</th><th>Required?</th></tr></thead>
+    <tbody>
+      <tr><td><a href="organisation.html">Organisation</a></td><td>0</td><td>Name</td><td><span class="tag required">Always required</span></td></tr>
+      <tr><td><a href="brand.html">Brand</a></td><td>2</td><td>Name, Logo, Slogan, Legal Entity, Website</td><td><span class="tag required">Always required</span></td></tr>
+      <tr><td><a href="franchisee.html">Franchisee</a></td><td>—</td><td>Name, Brand, Legal Entity</td><td><span class="tag optional">Created on demand</span></td></tr>
+      <tr><td><a href="country.html">Country</a> <span class="tag optional">lookup</span></td><td>3</td><td>Name, Key, ID</td><td><span class="tag optional">Auto-created</span></td></tr>
+      <tr><td><a href="legal-entity.html">Legal Entity</a></td><td>4</td><td>Legal Name, VAT, CR, Extra, Country, Organisation</td><td><span class="tag optional">Auto-created</span></td></tr>
+      <tr><td><a href="business-unit.html">Business Unit</a> <span class="tag optional">lookup</span></td><td>5</td><td>Name, Key, ID</td><td><span class="tag optional">Auto-created</span></td></tr>
+      <tr><td><a href="branch.html">Branch / Location</a></td><td>7</td><td>Name, Brand, Currency, Opening Hours, Address, CR, Lat/Long</td><td><span class="tag required">Always required</span></td></tr>
+      <tr><td><a href="business-category.html">Business Category</a> <span class="tag optional">lookup</span></td><td>—</td><td>Name, Key, ID</td><td><span class="tag optional">Reference data</span></td></tr>
+      <tr><td><a href="currency.html">Currency</a> <span class="tag optional">lookup</span></td><td>—</td><td>Name, Key, ID</td><td><span class="tag optional">Reference data</span></td></tr>
+    </tbody>
+  </table>
+</div>
+
+  </main>
+</div>
+</body>
+</html>
