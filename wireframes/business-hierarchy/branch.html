@@ -1,0 +1,134 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Branch / Location — Business Hierarchy Wireframe</title>
+<link rel="stylesheet" href="style.css">
+<style>
+  .section-head { grid-column: span 2; font-size: 13px; font-weight: 700; color: #1f2430; text-transform: uppercase; letter-spacing: .03em; border-bottom: 1px solid #eef0f3; padding-bottom: 6px; margin-top: 8px; }
+  .note { background: #eef2ff; border: 1px solid #d6deff; color: #2c3a8c; border-radius: 6px; padding: 10px 14px; font-size: 13px; margin-bottom: 16px; }
+  .toggle { display: inline-block; background: #eef0f3; color: #6b7280; border-radius: 4px; padding: 2px 8px; font-size: 12px; }
+</style>
+</head>
+<body>
+<div class="layout">
+  <nav class="sidebar">
+      <h1>Business Hierarchy<br><span class="badge">Organisation Service</span></h1>
+      <a href="organisation.html">Organisation</a>
+      <a href="brand.html">Brand</a>
+      <a href="franchisee.html">Franchisee</a>
+      <a href="legal-entity.html">Legal Entity</a>
+      <a href="branch.html" class="active">Branch / Location</a>
+      <div class="nav-group">Lookups</div>
+      <a href="country.html">Country</a>
+      <a href="business-unit.html">Business Unit</a>
+      <a href="business-category.html">Business Category</a>
+      <a href="currency.html">Currency</a>
+    </nav>
+  <main class="main">
+
+    <h2>Branch / Location</h2>
+    <p class="subtitle">Required. The create form has <strong>two states</strong> driven by the Organisation's subscription: a <strong>Base</strong> state, and an <strong>Online-enabled</strong> state when one of the online products is part of the subscription.</p>
+
+    <div class="note">
+      <strong>Subscription-driven fields.</strong> When no online product is in the subscription, only Base fields are shown and coordinates are optional.
+      When an online product is part of the subscription, <strong>Latitude/Longitude become required</strong> and an additional <strong>Online / Delivery</strong> section appears.
+    </div>
+
+    <div class="card">
+      <div class="toolbar">
+        <h3>Branch / Location list</h3>
+        <a class="btn" href="#new-branch">+ Add Branch / Location</a>
+      </div>
+      <table>
+        <thead><tr><th>Name</th><th>Reference</th><th>Brand</th><th>Currency</th><th>Country</th><th>City</th><th>Online</th></tr></thead>
+        <tbody>
+          <tr><td>Olaya Street Branch</td><td>BR-000123</td><td>Burger Lab</td><td>SAR</td><td>Saudi Arabia</td><td>Riyadh</td><td><span class="tag">Enabled</span></td></tr>
+          <tr><td>Dubai Mall Kiosk</td><td>BR-000124</td><td>Pasta Bros</td><td>AED</td><td>UAE</td><td>Dubai</td><td><span class="toggle">—</span></td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <!-- ============ STATE 1: BASE (no online product) ============ -->
+    <div class="card" id="new-branch">
+      <h3>New Branch — Base state <span class="toggle">subscription has no online product</span></h3>
+      <div class="form-grid">
+
+        <div class="section-head">Identity</div>
+        <div class="field"><label>ID <span class="hint">(system-generated)</span></label><input type='text' placeholder='auto' disabled></div>
+        <div class="field"><label>Branch Name <span class="tag required">required</span></label><input type='text' placeholder=''></div>
+        <div class="field"><label>Reference <span class="hint">(auto-generated)</span> <span class="tag required">required</span></label><input type='text' placeholder='BR-000125' disabled></div>
+        <div class="field"><label>Brand <span class="tag required">required</span></label><select><option>Burger Lab</option><option>Pasta Bros</option></select></div>
+        <div class="field"><label>Currency <span class="hint">(select one or more, from Currency lookup)</span> <span class="tag required">required</span></label><select multiple size="4"><option>SAR — Saudi Riyal</option><option>AED — UAE Dirham</option><option>KWD — Kuwaiti Dinar</option><option>QAR — Qatari Riyal</option><option>BHD — Bahraini Dinar</option><option>OMR — Omani Rial</option><option>EGP — Egyptian Pound</option></select></div>
+        <div class="field"><label>Country <span class="hint">(reference)</span> <span class="tag required">required</span></label><select><option>Saudi Arabia</option><option>UAE</option><option>Kuwait</option></select></div>
+        <div class="field span-2"><label>Business Category <span class="hint">(select one or more)</span> <span class="tag required">required</span></label><select multiple size="4"><option>Quick Service Restaurant (QSR)</option><option>Fine Dining</option><option>Cafe</option><option>Casual Dining</option><option>Bakery &amp; Pastry</option><option>Food Truck</option><option>Cloud Kitchen</option><option>Bar &amp; Lounge</option></select></div>
+        <div class="field span-2"><label>Business Unit <span class="hint">(select one or more, from Business Unit lookup)</span></label><select multiple size="4"><option>Default Business Unit</option><option>Central Kitchen</option><option>Commissary</option><option>Cloud Kitchen</option><option>Catering &amp; Events</option><option>Franchise Operations</option></select></div>
+        <div class="field"><label>Opening Hours <span class="hint">(optional, e.g. 09:00–23:00)</span></label><input type='text' placeholder=''></div>
+
+        <div class="section-head">Address</div>
+        <div class="field"><label>City <span class="hint">(predefined list, based on country)</span></label><select><option>Riyadh</option><option>Jeddah</option><option>Dammam</option></select></div>
+        <div class="field"><label>Governorate</label><input type='text' placeholder=''></div>
+        <div class="field"><label>Region / City</label><input type='text' placeholder=''></div>
+        <div class="field"><label>Street</label><input type='text' placeholder=''></div>
+        <div class="field"><label>Building Number</label><input type='text' placeholder=''></div>
+        <div class="field"><label>Latitude <span class="tag optional">optional</span></label><input type='text' placeholder='24.7136'></div>
+        <div class="field"><label>Longitude <span class="tag optional">optional</span></label><input type='text' placeholder='46.6753'></div>
+      </div>
+      <br>
+      <a class="btn" href="#">Save</a>
+      <a class="btn secondary" href="#">Cancel</a>
+    </div>
+
+    <!-- ============ STATE 2: ONLINE-ENABLED ============ -->
+    <div class="card" id="new-branch-online">
+      <h3>New Branch — Online-enabled state <span class="tag">subscription includes an online product</span></h3>
+      <div class="form-grid">
+
+        <div class="section-head">Identity</div>
+        <div class="field"><label>ID <span class="hint">(system-generated)</span></label><input type='text' placeholder='auto' disabled></div>
+        <div class="field"><label>Branch Name <span class="tag required">required</span></label><input type='text' placeholder=''></div>
+        <div class="field"><label>Reference <span class="hint">(auto-generated)</span> <span class="tag required">required</span></label><input type='text' placeholder='BR-000125' disabled></div>
+        <div class="field"><label>Brand <span class="tag required">required</span></label><select><option>Burger Lab</option><option>Pasta Bros</option></select></div>
+        <div class="field"><label>Currency <span class="hint">(select one or more, from Currency lookup)</span> <span class="tag required">required</span></label><select multiple size="4"><option>SAR — Saudi Riyal</option><option>AED — UAE Dirham</option><option>KWD — Kuwaiti Dinar</option><option>QAR — Qatari Riyal</option><option>BHD — Bahraini Dinar</option><option>OMR — Omani Rial</option><option>EGP — Egyptian Pound</option></select></div>
+        <div class="field"><label>Country <span class="hint">(reference)</span> <span class="tag required">required</span></label><select><option>Saudi Arabia</option><option>UAE</option><option>Kuwait</option></select></div>
+        <div class="field span-2"><label>Business Category <span class="hint">(select one or more)</span> <span class="tag required">required</span></label><select multiple size="4"><option>Quick Service Restaurant (QSR)</option><option>Fine Dining</option><option>Cafe</option><option>Casual Dining</option><option>Bakery &amp; Pastry</option><option>Food Truck</option><option>Cloud Kitchen</option><option>Bar &amp; Lounge</option></select></div>
+        <div class="field span-2"><label>Business Unit <span class="hint">(select one or more, from Business Unit lookup)</span></label><select multiple size="4"><option>Default Business Unit</option><option>Central Kitchen</option><option>Commissary</option><option>Cloud Kitchen</option><option>Catering &amp; Events</option><option>Franchise Operations</option></select></div>
+        <div class="field"><label>Opening Hours <span class="hint">(optional, e.g. 09:00–23:00)</span></label><input type='text' placeholder=''></div>
+
+        <div class="section-head">Address</div>
+        <div class="field"><label>City <span class="hint">(predefined list, based on country)</span></label><select><option>Riyadh</option><option>Jeddah</option><option>Dammam</option></select></div>
+        <div class="field"><label>Governorate</label><input type='text' placeholder=''></div>
+        <div class="field"><label>Region / City</label><input type='text' placeholder=''></div>
+        <div class="field"><label>Street</label><input type='text' placeholder=''></div>
+        <div class="field"><label>Building Number</label><input type='text' placeholder=''></div>
+        <div class="field"><label>Latitude <span class="tag required">required</span></label><input type='text' placeholder='24.7136'></div>
+        <div class="field"><label>Longitude <span class="tag required">required</span></label><input type='text' placeholder='46.6753'></div>
+
+        <div class="section-head">Online / Delivery</div>
+        <div class="field"><label>Preparation + Delivery Time <span class="hint">(total, minutes)</span> <span class="tag required">required</span></label><input type='text' placeholder='45'></div>
+        <div class="field"><label>Preparation Time <span class="hint">(minutes)</span> <span class="tag required">required</span></label><input type='text' placeholder='20'></div>
+        <div class="field"><label>Base Delivery Charge <span class="tag required">required</span></label><input type='text' placeholder='10.00'></div>
+        <div class="field"><label>Per-Kilometer Additional Charge <span class="tag required">required</span></label><input type='text' placeholder='2.00'></div>
+        <div class="field"><label>Base Maximum Distance <span class="hint">(km)</span> <span class="tag required">required</span></label><input type='text' placeholder='15'></div>
+
+        <div class="section-head">Online / Channel Options <span class="hint" style="text-transform:none;font-weight:400;">(toggles, true/false)</span></div>
+        <div class="field"><label><input type='checkbox'> Enable Delivery</label></div>
+        <div class="field"><label><input type='checkbox'> Enable Pickup</label></div>
+        <div class="field"><label><input type='checkbox'> Enable Curbside</label></div>
+        <div class="field"><label><input type='checkbox'> Open 24 Hours</label></div>
+        <div class="field"><label><input type='checkbox'> Enable Inventory Update</label></div>
+        <div class="field"><label><input type='checkbox'> Enable Drive Thru</label></div>
+        <div class="field"><label><input type='checkbox'> Table Number Prompt</label></div>
+        <div class="field"><label><input type='checkbox'> Table Tents Prompt</label></div>
+        <div class="field"><label><input type='checkbox'> Pager Prompt</label></div>
+      </div>
+      <br>
+      <a class="btn" href="#">Save</a>
+      <a class="btn secondary" href="#">Cancel</a>
+    </div>
+
+  </main>
+</div>
+</body>
+</html>

@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Legal Entity — Business Hierarchy Wireframe</title>
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+<div class="layout">
+  <nav class="sidebar">
+      <h1>Business Hierarchy<br><span class="badge">Organisation Service</span></h1>
+      <a href="organisation.html">Organisation</a>
+      <a href="brand.html">Brand</a>
+      <a href="franchisee.html">Franchisee</a>
+      <a href="legal-entity.html" class="active">Legal Entity</a>
+      <a href="branch.html">Branch / Location</a>
+      <div class="nav-group">Lookups</div>
+      <a href="country.html">Country</a>
+      <a href="business-unit.html">Business Unit</a>
+      <a href="business-category.html">Business Category</a>
+      <a href="currency.html">Currency</a>
+    </nav>
+  <main class="main">
+    
+    <h2>Legal Entity</h2>
+    <p class="subtitle">First-class financial node. All fields below are <strong>required</strong>. CR and the two Owner fields each accept <strong>multiple values</strong>.</p>
+    <div class="card">
+      <div class="toolbar">
+        <h3>Legal Entity list</h3>
+        <a class="btn" href="#new-legal-entity">+ Add Legal Entity</a>
+      </div>
+      <table>
+        <thead><tr><th>Legal Name</th><th>CR</th><th>VAT</th><th>Country</th><th>Owner IDs</th><th>Owner Users</th></tr></thead>
+        <tbody>
+          <tr><td>Burger Lab Trading Co.</td><td>CR-10293, CR-10294</td><td>3001234567</td><td>Saudi Arabia</td><td>OWN-001, OWN-002</td><td>founder@burgerlab.com</td></tr>
+          <tr><td>Acme F&B LLC</td><td>CR-55821</td><td>1009876543</td><td>United Arab Emirates</td><td>OWN-101</td><td>ceo@acme.com, ops@acme.com</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="card" id="new-legal-entity">
+      <h3>New Legal Entity</h3>
+      <div class="form-grid">
+        <div class="field"><label>ID <span class="hint">(system-generated)</span></label><input type='text' placeholder='auto' disabled></div>
+        <div class="field"><label>Legal Name <span class="tag required">required</span></label><input type='text' placeholder=''></div>
+        <div class="field"><label>CR <span class="hint">(multiple allowed — comma separated)</span> <span class="tag required">required</span></label><input type='text' placeholder='CR-10293, CR-10294'></div>
+        <div class="field"><label>VAT <span class="tag required">required</span></label><input type='text' placeholder='3001234567'></div>
+        <div class="field"><label>Country <span class="hint">(reference)</span> <span class="tag required">required</span></label><select><option>Saudi Arabia</option><option>United Arab Emirates</option><option>Kuwait</option></select></div>
+        <div class="field"><label>Owner ID <span class="hint">(multiple allowed — comma separated)</span> <span class="tag required">required</span></label><input type='text' placeholder='OWN-001, OWN-002'></div>
+        <div class="field span-2"><label>Owner User <span class="hint">(select one or more from existing users)</span> <span class="tag required">required</span></label><select multiple size="4"><option>founder@burgerlab.com — Sara Al-Otaibi</option><option>ceo@acme.com — Khaled Mansour</option><option>ops@acme.com — Layla Hassan</option><option>finance@foodics.com — Omar Nasser</option><option>admin@foodics.com — Huda Salem</option></select></div>
+      </div>
+      <br>
+      <a class="btn" href="#">Save</a>
+      <a class="btn secondary" href="#">Cancel</a>
+    </div>
+    
+  </main>
+</div>
+</body>
+</html>

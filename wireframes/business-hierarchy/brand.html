@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Brand — Business Hierarchy Wireframe</title>
+<link rel="stylesheet" href="style.css">
+<style>
+  .section-head { grid-column: span 2; font-size: 13px; font-weight: 700; color: #1f2430; text-transform: uppercase; letter-spacing: .03em; border-bottom: 1px solid #eef0f3; padding-bottom: 6px; margin-top: 8px; }
+  .note { background: #eef2ff; border: 1px solid #d6deff; color: #2c3a8c; border-radius: 6px; padding: 10px 14px; font-size: 13px; margin-bottom: 16px; }
+  .toggle { display: inline-block; background: #eef0f3; color: #6b7280; border-radius: 4px; padding: 2px 8px; font-size: 12px; }
+  .btn.disabled { background: #c4c9d4; cursor: not-allowed; pointer-events: none; }
+  .lock { background: #fff7e6; border: 1px solid #ffe1a8; color: #8a6100; border-radius: 6px; padding: 10px 14px; font-size: 13px; margin-top: 12px; }
+  .count { color: #6b7280; font-size: 13px; font-weight: 400; }
+</style>
+</head>
+<body>
+<div class="layout">
+  <nav class="sidebar">
+      <h1>Business Hierarchy<br><span class="badge">Organisation Service</span></h1>
+      <a href="organisation.html">Organisation</a>
+      <a href="brand.html" class="active">Brand</a>
+      <a href="franchisee.html">Franchisee</a>
+      <a href="legal-entity.html">Legal Entity</a>
+      <a href="branch.html">Branch / Location</a>
+      <div class="nav-group">Lookups</div>
+      <a href="country.html">Country</a>
+      <a href="business-unit.html">Business Unit</a>
+      <a href="business-category.html">Business Category</a>
+      <a href="currency.html">Currency</a>
+    </nav>
+  <main class="main">
+
+    <h2>Brand</h2>
+    <p class="subtitle">Required. The <strong>fields are the same in all cases</strong> — what changes is <strong>how many brands</strong> can be created, which is driven by the package, not by online products.</p>
+
+    <div class="note">
+      <strong>Brand count is entitlement-driven.</strong> Every Organisation is allowed <strong>one (1) brand by default</strong>.
+      Creating <strong>additional brands</strong> requires the <strong>Multiple Brands add-on</strong> in the package.
+      The create <em>form</em> is identical either way; only the ability to add beyond the first brand differs.
+    </div>
+
+    <!-- ============ STATE 1: DEFAULT — 1 brand, no add-on ============ -->
+    <div class="card">
+      <div class="toolbar">
+        <h3>Brand list <span class="count">— Default package <span class="toggle">1 brand allowed</span></span></h3>
+        <a class="btn disabled" href="#" title="Requires Multiple Brands add-on">+ Add Brand</a>
+      </div>
+      <table>
+        <thead><tr><th>Name</th><th>Legal Entity</th><th>Slogan</th><th>Website</th><th>Branches</th></tr></thead>
+        <tbody>
+          <tr><td>Burger Lab</td><td>Burger Lab Trading Co.</td><td>Stacked different</td><td>burgerlab.com</td><td>12</td></tr>
+        </tbody>
+      </table>
+      <div class="lock">🔒 Brand limit reached (1 of 1). Add the <strong>Multiple Brands</strong> add-on to create more brands.</div>
+    </div>
+
+    <!-- ============ STATE 2: WITH MULTIPLE BRANDS ADD-ON ============ -->
+    <div class="card">
+      <div class="toolbar">
+        <h3>Brand list <span class="count">— With Multiple Brands add-on <span class="tag">additional brands enabled</span></span></h3>
+        <a class="btn" href="#new-brand">+ Add Brand</a>
+      </div>
+      <table>
+        <thead><tr><th>Name</th><th>Legal Entity</th><th>Slogan</th><th>Website</th><th>Branches</th></tr></thead>
+        <tbody>
+          <tr><td>Burger Lab</td><td>Burger Lab Trading Co.</td><td>Stacked different</td><td>burgerlab.com</td><td>12</td></tr>
+          <tr><td>Pasta Bros</td><td>Acme F&B LLC</td><td>—</td><td>—</td><td>4</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <!-- ============ CREATE FORM (same fields in both states) ============ -->
+    <div class="card" id="new-brand">
+      <h3>New Brand <span class="toggle">same fields regardless of package</span></h3>
+      <div class="form-grid">
+        <div class="field"><label>ID <span class="hint">(system-generated)</span></label><input type='text' placeholder='auto' disabled></div>
+        <div class="field"><label>Name <span class="tag required">required</span></label><input type='text' placeholder=''></div>
+        <div class="field"><label>Legal Entity <span class="hint">(reference)</span> <span class="tag required">required</span></label><select><option>Burger Lab Trading Co.</option><option>Acme F&B LLC</option></select></div>
+        <div class="field span-2"><label>Business Category <span class="hint">(select one or more)</span> <span class="tag required">required</span></label><select multiple size="4"><option>Quick Service Restaurant (QSR)</option><option>Fine Dining</option><option>Cafe</option><option>Casual Dining</option><option>Bakery &amp; Pastry</option><option>Food Truck</option><option>Cloud Kitchen</option><option>Bar &amp; Lounge</option></select></div>
+        <div class="field"><label>Logo <span class="hint">(optional, image upload)</span> <span class="tag optional">optional</span></label><input type='file'></div>
+        <div class="field"><label>Website <span class="tag optional">optional</span></label><input type='text' placeholder='https://'></div>
+        <div class="field"><label>Slogan <span class="tag optional">optional</span></label><input type='text' placeholder=''></div>
+      </div>
+      <br>
+      <a class="btn" href="#">Save</a>
+      <a class="btn secondary" href="#">Cancel</a>
+    </div>
+
+  </main>
+</div>
+</body>
+</html>
